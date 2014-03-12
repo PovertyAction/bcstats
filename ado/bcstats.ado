@@ -1,4 +1,4 @@
-* version 1.0.0
+* version 1.1.0
 program bcstats, rclass
 	vers 9
 	syntax, ///
@@ -213,7 +213,7 @@ program bcstats, rclass
 	loc bcadopts backchecker bcteam
 	foreach data in survey bc {
 		* file
-		cap use "``data'data'"
+		cap use "``data'data'", clear
 		if _rc {
 			di as err "invalid option `data'data"
 			ex 198
@@ -430,6 +430,21 @@ program bcstats, rclass
 			loc keep`data'f `keep`data'f' `:format `var''
 		}
 		
+		* modify strings
+		if "`lower'`upper'`nosymbol'`trim'" != "" {
+			ds `tvars', has(type string)
+			foreach var in `r(varlist)' {
+				if "`lower'`upper'" != "" qui replace `var' = `lower'`upper'(`var')
+				if "`nosymbol'" != "" {
+					foreach symbol in . , ! ? ' / ; : ( ) ` ~ @ # $ % ^ & * - _ = + [ ] { } \ | < > {
+						qui replace `var' = subinstr(`var', "`symbol'", " ", .)
+					}
+					qui replace `var' = subinstr(`var', `"""', " ", .)
+				}
+				if "`trim'" != "" qui replace `var' == trim(itrim(`var'))
+			}
+		}
+		
 		* rename variables in back check data
 		if "`data'" == "bc" {
 			* variable name length
@@ -449,21 +464,6 @@ program bcstats, rclass
 				cap confirm v bc_`var'
 				if _rc ren `var' bc_`var'
 				loc bckeepbc `bckeepbc' bc_`var'
-			}
-		}
-		
-		* modify strings
-		if "`lower'`upper'`nosymbol'`trim'" != "" {
-			ds `tvars', has(type string)
-			foreach var in `r(varlist)' {
-				if "`lower'`upper'" != "" qui replace `var' = `lower'`upper'(`var')
-				if "`nosymbol'" != "" {
-					foreach symbol in . , ! ? ' / ; : ( ) ` ~ @ # $ % ^ & * - _ = + [ ] { } \ | < > {
-						qui replace `var' = subinstr(`var', "`symbol'", " ", .)
-					}
-					qui replace `var' = subinstr(`var', `"""', " ", .)
-				}
-				if "`trim'" != "" qui replace `var' == trim(itrim(`var'))
 			}
 		}
 		
@@ -910,3 +910,6 @@ end
 
 * Changes history
 * 1.0.0. Nov 3, 2011.
+* 1.1.0. Nov 18, 2011.
+*	Data set in memory does not need to be empty or saved.
+*	Fixed bug with options lower, upper, nosymbol, and trim.
