@@ -212,6 +212,7 @@ collaborated on the structure of the program.
 {title:Also see}
 
 {psee}
-Online: {help ttest}, {help signrank}
+Help:  {manhelp ttest R}, {manhelp signrank R}
+
 {psee}
-User-written: {help cfout}
+User-written:  {helpb cfout}
