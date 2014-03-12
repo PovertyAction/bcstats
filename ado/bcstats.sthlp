@@ -205,8 +205,8 @@ collaborated on the structure of the program.
 {marker author}{...}
 {title:Author}
 
-{phang}Matthew White, Innovations for Poverty Action{p_end}
-{phang}mwhite@poverty-action.org{p_end}
+{pstd}Matthew White, Innovations for Poverty Action{p_end}
+{pstd}mwhite@poverty-action.org{p_end}
 
 
 {title:Also see}
