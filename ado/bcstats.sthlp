@@ -11,8 +11,9 @@ producing a data set of comparisons
 {title:Syntax}
 
 {p 8 10 2}
-{cmd:bcstats}, {opt s:urveydata(filename)} {opt b:cdata(filename)} {opth id(varlist)} [{opth t1vars(varlist)}]  [{opth t2vars(varlist)}]
-[{opth t3vars(varlist)}] [{it:options}]
+{cmd:bcstats,}
+{opt s:urveydata(filename)} {opt b:cdata(filename)} {opth id(varlist)}
+[{it:options}]
 
 
 {synoptset 23 tabbed}{...}
