@@ -1,0 +1,100 @@
+{smcl}
+{* *! version 1.0.0  25oct2009}{...}
+{cmd:help bcstats}
+{hline}
+
+{title:Title}
+
+{p2colset 5 23 25 2}{...}
+{p2col: {cmd:bcstats} {hline 2} Compare survey and back check data, producing a data set of comparisons}{p_end}
+{p2colreset}{...}
+
+
+{title:Syntax}
+
+{p 8 10 2}
+{cmd:bcstats using} {it:filename}, [{opth t1vars(varlist)}]  [{opth t2vars(varlist)}] [{opth t3vars(varlist)}] [{it:options}]
+
+
+{synoptset 23 tabbed}{...}
+{marker options}{...}
+{synopthdr}
+{synoptline}
+{syntab :Comparison variables}
+{synopt :{opth t1vars(varlist)}}The list of type-1 variables. Type-1 variables are expected to stay constant between the survey and back check, and
+differences may result in action against the enumerator. Display variables with high error rates and complete enumerator checks.{p_end}
+{synopt :{opth t2vars(varlist)}}The list of type-2 variables. Type-2 variables may be difficult for enumerators to administer because the questions
+are complicated or confusing. Differences may indicate the need for further training, but will not result in action against the enumerator. Display
+the error rates of all variables and complete enumerator and stability checks.{p_end}
+{synopt :{opth t3vars(varlist)}}The list of type-3 variables. Type-3 variables may or may not be constant between the survey and back check, and
+differences will not result in action against the enumerator. Display the error rates of all variables and complete stability checks.{p_end}
+
+{syntab :Enumerator checks}
+{synopt :{opth enum:erator(varname)}}The enumerator variable in the survey data. Display enumerators with high error rates and variables with high
+error rates for these enumerators.{p_end}
+{synopt :{opth back:checker(varname)}}The back checker variable in the back check data. Display the error rates of all back checkers.{p_end}
+{synopt :{opth enumt:eam(varname)}}The enumerator team variable in the survey data. Display the overall error rates of all teams.{p_end}
+{synopt :{opth bct:eam(varname)}}The back check team variable in the back check data. Display the overall error rates of all teams.{p_end}
+
+{syntab :Stability checks}
+{synopt :{opth ttest(varlist)}}Run paired two-sample mean-comparison tests for {varlist} in the back check and survey data using {help ttest}.{p_end}
+{synopt :{opth signrank(varlist)}}Run Wilcoxon matched-pairs signed-ranks tests for {varlist} in the back check and survey data using {help signrank}.
+{p_end}
+
+{syntab :Comparisons data set}
+{synopt :{opth keepsu:rvey(varlist)}}Include {varlist} in the survey data in the comparisons data set.{p_end}
+{synopt :{opth keepbc(varlist)}}Include {varlist} in the back check data in the comparisons data set. Variables in {varlist} are renamed with the
+prefix {res:bc_}.{p_end}
+{synopt :{opt full}}Include all comparisons in the data set, not just differences.{p_end}
+{synopt :{opt file:name(filename)}}Save as {it:filename}; default is bc_diffs.csv.{p_end}
+{synopt :{opt replace}}Overwrite existing data set.{p_end}
+{synopt :{opt dta}}Save data set as .dta file; default is .csv.{p_end}
+{synopt :{opt nol:abel}}Do not use value labels.{p_end}
+
+{syntab :Options}
+{synopt :{opt okrate(#)}}The acceptable error rate; default is {res:0.1}. {cmd:okrate(0)} displays the error rates of all enumerators and type-1
+variables.{p_end}
+{synopt :{res:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{res:)}}Do not count as a discrepancy if {varname} in the back check data
+falls within {it:range} of the survey data. {it:range} may be of the form [{it:-x}, {it:y}] (absolute) or [{it:-x%}, {it:y%}]
+(relative).{p_end}
+{synopt :{res:{ul:ex}clval(}{it:real string} [, {it:real string} ...]{res:)}}Do not compare back check responses that equal {it:real} (for numeric
+variables) or {it:string} (for string variables).{p_end}
+{synopt :{opt nos:ymbol}}Before comparing, replace the following characters in string variables with a space:
+{res:. , ! ? ' / ; : ( ) ` ~ @ # $ % ^ & * - _ + = [ ] { } | \ " < >}{p_end}
+{synopt :{opt l:ower}}Convert all string variables to lower case before comparing.{p_end}
+{synopt :{opt u:pper}}Convert all string variables to upper case before comparing.{p_end}
+{synoptline}
+{p2colreset}{...}
+
+
+{title:Description}
+
+{pstd}
+{cmd:bcstats} compares back check data (in memory) and survey data (in the using data set), producing a data set of comparisons. It completes
+enumerator checks for type-1 and type-2 variables and stability checks for type-3 and type-2 variables.
+
+
+{title:Examples}
+
+{pstd}Assume that missing values are refusals or responses of "don't know".{p_end}
+{phang2}{cmd:use "bcstats_bc", clear}{p_end}
+{phang2}{cmd:bcstats using "bcstats_survey", ///}{p_end}
+{phang3}{cmd:id(id) okrate(0.09) exclval(. "") okrange(gameresult [-1, 1], itemssold [-5%, 5%]) ///}{p_end}
+{phang3}{cmd:t1vars(gender) enumerator(enum) enumteam(enumteam) backchecker(bcer) ///}{p_end}
+{phang3}{cmd:t2vars(gameresult) signrank(gameresult) ///}{p_end}
+{phang3}{cmd:t3vars(itemssold) ttest(itemssold) ///}{p_end}
+{phang3}{cmd:keepbc(date) keepsurvey(date) full replace}{p_end}
+
+
+{title:Author}
+
+{phang}Matthew White, Innovations for Poverty Action{p_end}
+{phang}mwhite@poverty-action.org{p_end}
+
+
+{title:Also see}
+
+{psee}
+Online: {help ttest}, {help signrank}
+{psee}
+User-written: {help cfout}
