@@ -438,7 +438,7 @@ program bcstats, rclass
 
 		* modify strings
 		if "`lower'`upper'`nosymbol'`trim'" != "" {
-			ds `tvars', has(type string)
+			qui ds `tvars', has(type string)
 			foreach var in `r(varlist)' {
 				if "`lower'`upper'" != "" qui replace `var' = `lower'`upper'(`var')
 				if "`nosymbol'" != "" {
@@ -447,7 +447,7 @@ program bcstats, rclass
 					}
 					qui replace `var' = subinstr(`var', `"""', " ", .)
 				}
-				if "`trim'" != "" qui replace `var' == trim(itrim(`var'))
+				if "`trim'" != "" qui replace `var' = trim(itrim(`var'))
 			}
 		}
 
