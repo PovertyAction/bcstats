@@ -153,7 +153,7 @@ occurs after symbols are replaced with a space.
 
 
 {marker results}{...}
-{title:Saved Results}
+{title:Stored results}
 
 {pstd}
 {cmd:bcstats} saves the following in {cmd:r()}:
@@ -185,8 +185,10 @@ occurs after symbols are replaced with a space.
 {marker acknowledgements}{...}
 {title:Acknowledgements}
 
-{pstd}Hana Scheetz Freymiller of Innovations for Poverty Action conceived of the three variable types and collaborated on the structure of the
-program.
+{pstd}
+Hana Scheetz Freymiller of Innovations for Poverty Action conceived of
+the three variable types and
+collaborated on the structure of the program.
 
 
 {marker author}{...}
