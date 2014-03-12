@@ -1,4 +1,4 @@
-* version 1.1.0
+* version 1.2.0
 program bcstats, rclass
 	vers 9
 	syntax, ///
@@ -381,6 +381,12 @@ program bcstats, rclass
 	foreach data in survey bc {
 		use "``data'data'"
 		
+		* number of observations
+		if !_N {
+			di as err "no observations in ``data'name' data"
+			ex 2000
+		}
+		
 		* confirm numeric variables
 		foreach var in ``data'advars' `ttest' `signrank' `rangevars' {
 			cap confirm numeric v `var'
@@ -485,6 +491,11 @@ program bcstats, rclass
 	qui merge `id' using `survey'
 	
 	* ids in back check but not survey data
+	qui count if _merge == 3
+	if !r(N) {
+		di as err "there are no shared IDs between survey and back check data"
+		ex 2000
+	}
 	qui count if _merge == 1
 	if r(N) {
 		di "{txt}note: the following ids appear in the back check data but not the survey data and will be dropped."
@@ -913,3 +924,5 @@ end
 * 1.1.0. Nov 18, 2011.
 *	Data set in memory does not need to be empty or saved.
 *	Fixed bug with options lower, upper, nosymbol, and trim.
+* 1.2.0. Dec 7, 2011.
+*	Errors if there are no observations.
