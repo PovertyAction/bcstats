@@ -158,27 +158,38 @@ occurs after symbols are replaced with a space.
 {pstd}
 {cmd:bcstats} saves the following in {cmd:r()}:
 
-{synoptset 15 tabbed}{...}
-{p2col 5 15 19 2: Scalars}{p_end}
-{synopt:{cmd:r(showid1)}}1 if {opt showid} displayed unique IDs for type 1 variables and 0 otherwise{p_end}
-{synopt:{cmd:r(showid2)}}1 if {opt showid} displayed unique IDs for type 2 variables and 0 otherwise{p_end}
+{* Using -help describe- as a template.}{...}
+{synoptset 20 tabbed}{...}
+{p2col 5 20 24 2: Scalars}{p_end}
+{synopt:{cmd:r(showid1)}}1 if {opt showid()} displayed
+unique IDs for type 1 variables and 0 otherwise{p_end}
+{synopt:{cmd:r(showid2)}}1 if {opt showid()} displayed
+unique IDs for type 2 variables and 0 otherwise{p_end}
 
-{p2col 5 15 19 2: Matrices}{p_end}
+{p2col 5 20 24 2: Matrices}{p_end}
 {synopt:{cmd:r(enum1)}}the type 1 variable error rates of all enumerators{p_end}
 {synopt:{cmd:r(enum2)}}the type 2 variable error rates of all enumerators{p_end}
-{synopt:{cmd:r(backchecker1)}}the type 1 variable error rates of the back checkers{p_end}
-{synopt:{cmd:r(backchecker2)}}the type 2 variable error rates of the back checkers{p_end}
-{synopt:{cmd:r(enumteam1)}}the type 1 variable error rates of the enumerator teams{p_end}
-{synopt:{cmd:r(enumteam2)}}the type 2 variable error rates of the enumerator teams{p_end}
-{synopt:{cmd:r(bcteam1)}}the type 1 variable error rates of the back checker teams{p_end}
-{synopt:{cmd:r(bcteam2)}}the type 2 variable error rates of the back checker teams{p_end}
+{synopt:{cmd:r(backchecker1)}}the type 1 variable error rates of
+the back checkers{p_end}
+{synopt:{cmd:r(backchecker2)}}the type 2 variable error rates of
+the back checkers{p_end}
+{synopt:{cmd:r(enumteam1)}}the type 1 variable error rates of
+the enumerator teams{p_end}
+{synopt:{cmd:r(enumteam2)}}the type 2 variable error rates of
+the enumerator teams{p_end}
+{synopt:{cmd:r(bcteam1)}}the type 1 variable error rates of
+the back checker teams{p_end}
+{synopt:{cmd:r(bcteam2)}}the type 2 variable error rates of
+the back checker teams{p_end}
 {synopt:{cmd:r(var1)}}the error rates of all type 1 variables{p_end}
 {synopt:{cmd:r(var2)}}the error rates of all type 2 variables{p_end}
 {synopt:{cmd:r(var3)}}the error rates of all type 3 variables{p_end}
 {synopt:{cmd:r(ttest2)}}the results of {cmd:ttest} for type 2 variables{p_end}
 {synopt:{cmd:r(ttest3)}}the results of {cmd:ttest} for type 3 variables{p_end}
-{synopt:{cmd:r(signrank2)}}the results of {cmd:signrank} for type 2 variables{p_end}
-{synopt:{cmd:r(signrank3)}}the results of {cmd:signrank} for type 3 variables{p_end}
+{synopt:{cmd:r(signrank2)}}the results of {cmd:signrank} for
+type 2 variables{p_end}
+{synopt:{cmd:r(signrank3)}}the results of {cmd:signrank} for
+type 3 variables{p_end}
 {p2colreset}{...}
 
 
