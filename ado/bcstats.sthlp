@@ -19,54 +19,54 @@ producing a data set of comparisons
 {synoptset 23 tabbed}{...}
 {synopthdr}
 {synoptline}
-{syntab :Required}
-{synopt :{opt s:urveydata(filename)}}the survey data{p_end}
-{synopt :{opt b:cdata(filename)}}the back check data{p_end}
-{synopt :{opth id(varlist)}}the unique ID{p_end}
+{syntab:Required}
+{synopt:{opt s:urveydata(filename)}}the survey data{p_end}
+{synopt:{opt b:cdata(filename)}}the back check data{p_end}
+{synopt:{opth id(varlist)}}the unique ID{p_end}
 
-{syntab :Comparison variables}
-{synopt :{opth t1vars(varlist)}}the list of {help bcstats##type1:type 1 variables}{p_end}
-{synopt :{opth t2vars(varlist)}}the list of {help bcstats##type2:type 2 variables}{p_end}
-{synopt :{opth t3vars(varlist)}}the list of {help bcstats##type3:type 3 variables}{p_end}
+{syntab:Comparison variables}
+{synopt:{opth t1vars(varlist)}}the list of {help bcstats##type1:type 1 variables}{p_end}
+{synopt:{opth t2vars(varlist)}}the list of {help bcstats##type2:type 2 variables}{p_end}
+{synopt:{opth t3vars(varlist)}}the list of {help bcstats##type3:type 3 variables}{p_end}
 
-{syntab :Enumerator checks}
-{synopt :{opth enum:erator(varname)}}display enumerators with high error rates and variables with high error rates for those enumerators; {varname}
+{syntab:Enumerator checks}
+{synopt:{opth enum:erator(varname)}}display enumerators with high error rates and variables with high error rates for those enumerators; {varname}
 in survey data is used{p_end}
-{synopt :{opth back:checker(varname)}}display the error rates of all back checkers; {varname} in back check data is used{p_end}
-{synopt :{opth enumt:eam(varname)}}display the overall error rates of all enumerator teams; {varname} in survey data is used{p_end}
-{synopt :{opth bct:eam(varname)}}display the overall error rates of all back check teams; {varname} in back check data is used{p_end}
-{synopt :{res:{ul:sh}owid(}{it:integer}[%]{res:)}}display unique IDs with at least {it:integer} differences or at least an {it:integer}% error rate;
+{synopt:{opth back:checker(varname)}}display the error rates of all back checkers; {varname} in back check data is used{p_end}
+{synopt:{opth enumt:eam(varname)}}display the overall error rates of all enumerator teams; {varname} in survey data is used{p_end}
+{synopt:{opth bct:eam(varname)}}display the overall error rates of all back check teams; {varname} in back check data is used{p_end}
+{synopt:{res:{ul:sh}owid(}{it:integer}[%]{res:)}}display unique IDs with at least {it:integer} differences or at least an {it:integer}% error rate;
 default is {cmd:showid(30%)}{p_end}
-{synopt :{opt showall}}display the error rates of all enumerators, all variables, and all variables for all enumerators{p_end}
+{synopt:{opt showall}}display the error rates of all enumerators, all variables, and all variables for all enumerators{p_end}
 
-{syntab :Stability checks}
-{synopt :{opth ttest(varlist)}}run paired two-sample mean-comparison tests for {varlist} in the back check and survey data using {help ttest}{p_end}
-{synopt :{opt l:evel(#)}}set confidence level for {help ttest}; default is {cmd:level(95)}{p_end}
-{synopt :{opth signrank(varlist)}}run Wilcoxon matched-pairs signed-ranks tests for {varlist} in the back check and survey data using
+{syntab:Stability checks}
+{synopt:{opth ttest(varlist)}}run paired two-sample mean-comparison tests for {varlist} in the back check and survey data using {help ttest}{p_end}
+{synopt:{opt l:evel(#)}}set confidence level for {help ttest}; default is {cmd:level(95)}{p_end}
+{synopt:{opth signrank(varlist)}}run Wilcoxon matched-pairs signed-ranks tests for {varlist} in the back check and survey data using
 {help signrank}{p_end}
 
-{syntab :Comparisons data set}
-{synopt :{opth keepsu:rvey(varlist)}}include {varlist} in the survey data in the comparisons data set{p_end}
-{synopt :{opth keepbc(varlist)}}include {varlist} in the back check data in the comparisons data set{p_end}
-{synopt :{opt full}}include all comparisons, not just differences{p_end}
-{synopt :{opt nol:abel}}do not use value labels{p_end}
-{synopt :{opt file:name(filename)}}save as {it:filename}; default is {cmd:filename(bc_diffs.csv)} or {cmd:filename(bc_diffs.dta)} if {opt dta} is
+{syntab:Comparisons data set}
+{synopt:{opth keepsu:rvey(varlist)}}include {varlist} in the survey data in the comparisons data set{p_end}
+{synopt:{opth keepbc(varlist)}}include {varlist} in the back check data in the comparisons data set{p_end}
+{synopt:{opt full}}include all comparisons, not just differences{p_end}
+{synopt:{opt nol:abel}}do not use value labels{p_end}
+{synopt:{opt file:name(filename)}}save as {it:filename}; default is {cmd:filename(bc_diffs.csv)} or {cmd:filename(bc_diffs.dta)} if {opt dta} is
 specified {p_end}
-{synopt :{opt replace}}overwrite existing file{p_end}
-{synopt :{opt dta}}save data set as .dta file; default is .csv{p_end}
+{synopt:{opt replace}}overwrite existing file{p_end}
+{synopt:{opt dta}}save data set as .dta file; default is .csv{p_end}
 
-{syntab :Options}
-{synopt :{opt okrate(#)}}the acceptable error rate; default is {cmd:okrate(0.1)}{p_end}
-{synopt :{res:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{res:)}}do not count a value of {varname} in the back check data as a
+{syntab:Options}
+{synopt:{opt okrate(#)}}the acceptable error rate; default is {cmd:okrate(0.1)}{p_end}
+{synopt:{res:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{res:)}}do not count a value of {varname} in the back check data as a
 difference if it falls within {it:range} of the survey data{p_end}
-{synopt :{res:nodiff(}{it:# string} [, {it:# string} ...]{res:)}}do not count back check responses that equal {it:#} (for numeric variables) or
+{synopt:{res:nodiff(}{it:# string} [, {it:# string} ...]{res:)}}do not count back check responses that equal {it:#} (for numeric variables) or
 {it:string} (for string variables) as differences{p_end}
-{synopt :{opt exclude(# string)}}do not compare back check responses that equal {it:#} (for numeric variables) or {it:string} (for string variables)
+{synopt:{opt exclude(# string)}}do not compare back check responses that equal {it:#} (for numeric variables) or {it:string} (for string variables)
 {p_end}
-{synopt :{opt lo:wer}}convert all string variables to lower case before comparing{p_end}
-{synopt :{opt up:per}}convert all string variables to upper case before comparing{p_end}
-{synopt :{opt nos:ymbol}}replace symbols with spaces in string variables before comparing{p_end}
-{synopt :{opt tr:im}}remove leading or trailing blanks and multiple, consecutive internal blanks in string variables before comparing{p_end}
+{synopt:{opt lo:wer}}convert all string variables to lower case before comparing{p_end}
+{synopt:{opt up:per}}convert all string variables to upper case before comparing{p_end}
+{synopt:{opt nos:ymbol}}replace symbols with spaces in string variables before comparing{p_end}
+{synopt:{opt tr:im}}remove leading or trailing blanks and multiple, consecutive internal blanks in string variables before comparing{p_end}
 {synoptline}
 {p2colreset}{...}
 
