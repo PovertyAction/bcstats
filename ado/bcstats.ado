@@ -508,7 +508,7 @@ program bcstats, rclass
 	foreach var of loc tvars {
 		qui ds `var' bc_`var', has(type numeric)
 		if `:word count `r(varlist)'' == 1 {
-			if "`r(varlist)' == "`var'" di as err "variable `var' is numeric in the survey data and string in the back check data"
+			if "`r(varlist)'" == "`var'" di as err "variable `var' is numeric in the survey data and string in the back check data"
 			else di as err "variable `var' is string in the survey data and numeric in the back check data"
 			ex 198
 		}
