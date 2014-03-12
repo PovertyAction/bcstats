@@ -10,6 +10,7 @@
 {p2colreset}{...}
 
 
+{marker syntax}{...}
 {title:Syntax}
 
 {p 8 10 2}
@@ -72,6 +73,7 @@ difference if it falls within {it:range} of the survey data{p_end}
 {p2colreset}{...}
 
 
+{marker description}{...}
 {title:Description}
 
 {pstd}
@@ -79,6 +81,7 @@ difference if it falls within {it:range} of the survey data{p_end}
 variables and stability checks for type 2 and type 3 variables.
 
 
+{marker options}{...}
 {title:Options}
 
 {dlgtab:Comparison variables}
@@ -140,6 +143,7 @@ data for multiple back check survey versions.
 occurs after symbols are replaced with a space.
 
 
+{marker examples}{...}
 {title:Examples}
 
 {pstd}Assume that missing values were not asked in the back check survey version.{p_end}
@@ -151,6 +155,7 @@ occurs after symbols are replaced with a space.
 {phang3}{cmd:keepbc(date) keepsurvey(date) full replace}{p_end}
 
 
+{marker results}{...}
 {title:Saved Results}
 
 {pstd}
@@ -180,12 +185,14 @@ occurs after symbols are replaced with a space.
 {p2colreset}{...}
 
 
+{marker acknowledgements}{...}
 {title:Acknowledgements}
 
 {pstd}Hana Scheetz Freymiller of Innovations for Poverty Action conceived of the three variable types and collaborated on the structure of the
 program.
 
 
+{marker author}{...}
 {title:Author}
 
 {phang}Matthew White, Innovations for Poverty Action{p_end}
