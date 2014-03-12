@@ -199,7 +199,7 @@ program bcstats, rclass
 	}
 
 	* lower, upper
-	if "`lower'" != "" & "`upper'" == "" {
+	if "`lower'" != "" & "`upper'" != "" {
 		di as err "options lower and upper are mutually exclusive"
 		ex 198
 	}
