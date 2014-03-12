@@ -43,7 +43,7 @@ default is {cmd:showid(30%)}{p_end}
 {syntab :Stability checks}
 {synopt :{opth ttest(varlist)}}run paired two-sample mean-comparison tests for {varlist} in the back check and survey data using {help ttest}{p_end}
 {synopt :{opt l:evel(#)}}set confidence level for {help ttest}; default is {cmd:level(95)}{p_end}
-{synopt :{opth signrank(varlist)}}run Wilcoxon matched-pairs signed-ranks tests for {varlist} in the back check and survey data using 
+{synopt :{opth signrank(varlist)}}run Wilcoxon matched-pairs signed-ranks tests for {varlist} in the back check and survey data using
 {help signrank}{p_end}
 
 {syntab :Comparisons data set}
