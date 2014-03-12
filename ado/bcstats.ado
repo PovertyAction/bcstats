@@ -1,4 +1,4 @@
-* version 1.2.0
+*! version 1.2.1  20dec2011
 program bcstats, rclass
 	vers 9
 	syntax, ///
@@ -926,3 +926,5 @@ end
 *	Fixed bug with options lower, upper, nosymbol, and trim.
 * 1.2.0. Dec 7, 2011.
 *	Errors if there are no observations.
+* 1.2.1. Dec 20, 2011.
+*	Help file modified.

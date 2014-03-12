@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.2.0  07dec2011}{...}
+{* *! version 1.2.1  20dec2011}{...}
 {cmd:help bcstats}
 {hline}
 
@@ -138,18 +138,6 @@ data for multiple back check survey versions.
 {phang}
 {opt trim} removes leading or trailing blanks and multiple, consecutive internal blanks before comparing. If {opt nosymbol} is specified, this
 occurs after symbols are replaced with a space.
-
-
-{title:Remarks}
-
-{pstd}
-As of Stata 11, the {cmd:browse} subcommand is no longer available.  To open 
-duplicates in the Data Browser, use the following commands:
-
-{phang2}{cmd:. duplicates tag, generate({it:newvar})}{p_end}
-{phang2}{cmd:. browse if {it:newvar} > 1}{p_end}
-
-{phang}See {manhelp edit D} for details on the {cmd:browse} command.{p_end}
 
 
 {title:Examples}
