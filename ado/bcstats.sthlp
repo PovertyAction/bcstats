@@ -1,13 +1,10 @@
 {smcl}
 {* *! version 1.2.1  20dec2011}{...}
-{cmd:help bcstats}
-{hline}
-
 {title:Title}
 
-{p2colset 5 23 25 2}{...}
-{p2col: {cmd:bcstats} {hline 2} Compare survey and back check data, producing a data set of comparisons}{p_end}
-{p2colreset}{...}
+{phang}
+{cmd:bcstats} {hline 2} Compare survey and back check data,
+producing a data set of comparisons
 
 
 {marker syntax}{...}
