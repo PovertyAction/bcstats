@@ -632,7 +632,11 @@ program bcstats, rclass
 	drop `n'
 	order  `id' `enumerator' `enumteam' `backchecker' `bcteam' type variable survey back_check diff `keepsurvey' `bckeepbc'
 	if "`nolabel'" != "" {
-		la val `keepsurvey' `bckeepbc'
+		if `:list sizeof keepsurvey' | `:list sizeof bckeepbc' {
+			qui ds `keepsurvey' `bckeepbc', has(t numeric)
+			if "`r(varlist)'" != "" ///
+				la val `r(varlist)'
+		}
 	}
 	la var type "Variable type"
 	cap la l vartype
