@@ -1,0 +1,9 @@
+name,format,vallab,varlab
+id,%10.0g,,Unique ID
+date,%td,,Interview date
+enum,%10.0g,enumerator,Enumerator
+enumteam,%9.0g,,Enumerator team
+bcer,%10.0g,backchecker,Back checker name
+gender,%10.0g,gender,Respondent gender
+gameresult,%32.0g,,Game result
+itemssold,%10.0g,,Number of items sold
