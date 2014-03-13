@@ -12,7 +12,7 @@ producing a data set of comparisons
 
 {p 8 10 2}
 {cmd:bcstats,}
-{opt s:urveydata(filename)} {opt b:cdata(filename)} {opth id(varlist)}
+{opth s:urveydata(filename)} {opth b:cdata(filename)} {opth id(varlist)}
 [{it:options}]
 
 
