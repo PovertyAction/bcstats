@@ -131,6 +131,9 @@ Type 1 variables are expected to stay constant between
 the survey and back check, and differences may result in action against
 the enumerator. Display variables with high error rates and
 complete enumerator checks.
+See the Innovations for Poverty Action
+{help bcstats##back_check_manual:back check manual} for
+more on the three types.
 
 {phang}
 {marker type2}
@@ -141,6 +144,9 @@ Differences may indicate the need for further training,
 but will not result in action against the enumerator.
 Display the error rates of all variables and
 complete enumerator and stability checks.
+See the Innovations for Poverty Action
+{help bcstats##back_check_manual:back check manual} for
+more on the three types.
 
 {phang}
 {marker type3}
@@ -149,6 +155,9 @@ Type 3 variables are variables whose stability between
 the survey and back check is of interest.
 Differences will not result in action against the enumerator.
 Display the error rates of all variables and complete stability checks.
+See the Innovations for Poverty Action
+{help bcstats##back_check_manual:back check manual} for
+more on the three types.
 
 {dlgtab:Stability checks}
 
@@ -259,6 +268,14 @@ type 2 variables{p_end}
 {synopt:{cmd:r(signrank3)}}the results of {cmd:signrank} for
 type 3 variables{p_end}
 {p2colreset}{...}
+
+
+{marker references}{...}
+{title:References}
+
+{marker back_check_manual}{...}
+{phang}
+{browse "https://ipastorage.box.com/s/wvbz9wgpyhorw30sjyqo":Innovations for Poverty Action Back Check Manual}
 
 
 {marker acknowledgements}{...}
