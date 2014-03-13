@@ -630,7 +630,7 @@ program bcstats, rclass
 	drop _merge
 	sort `n'
 	drop `n'
-	order  `id' `enumerator' `enumteam' `backchecker' `bcteam' type variable survey back_check diff `keepsurvey' `bckeepbc'
+	order `id' `enumerator' `enumteam' `backchecker' `bcteam' type variable survey back_check diff `keepsurvey' `bckeepbc'
 	if "`nolabel'" != "" {
 		if `:list sizeof keepsurvey' | `:list sizeof bckeepbc' {
 			qui ds `keepsurvey' `bckeepbc', has(t numeric)
