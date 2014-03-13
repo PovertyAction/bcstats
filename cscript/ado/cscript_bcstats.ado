@@ -1,5 +1,5 @@
 *! version 3.6.0  04mar2013
-program define cscript , rclass
+program define cscript_bcstats, rclass
 	version 9
 	set linesize 79
 	while !("`1'" == "adofile" | "`1'"=="adofiles" | "`1'"=="") {
