@@ -44,7 +44,7 @@ all back checkers; {varname} in back check data is used{p_end}
 all enumerator teams; {varname} in survey data is used{p_end}
 {synopt:{opth bct:eam(varname)}}display the overall error rates of
 all back check teams; {varname} in back check data is used{p_end}
-{synopt:{res:{ul:sh}owid(}{it:integer}[%]{res:)}}display unique IDs with
+{synopt:{cmdab:sh:owid(}{it:integer}[%]{cmd:)}}display unique IDs with
 at least {it:integer} differences or at least an {it:integer}% error rate;
 default is {cmd:showid(30%)}{p_end}
 {synopt:{opt showall}}display the error rates of all enumerators, all variables,
@@ -75,10 +75,10 @@ default is {cmd:filename(bc_diffs.csv)} or
 {syntab:Options}
 {synopt:{opt okrate(#)}}the acceptable error rate;
 default is {cmd:okrate(0.1)}{p_end}
-{synopt:{res:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{res:)}}do
+{synopt:{cmd:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{cmd:)}}do
 not count a value of {varname} in the back check data as a difference if
 it falls within {it:range} of the survey data{p_end}
-{synopt:{res:nodiff(}{it:# string} [, {it:# string} ...]{res:)}}do not count
+{synopt:{cmd:nodiff(}{it:# string} [, {it:# string} ...]{cmd:)}}do not count
 back check responses that equal {it:#} (for numeric variables) or
 {it:string} (for string variables) as differences{p_end}
 {synopt:{opt exclude(# string)}}do not compare back check responses that
@@ -153,7 +153,7 @@ The default is {cmd:level(95)} or as set by {helpb set level}.
 {phang}
 {opth keepbc(varlist)} specifies that variables in {varlist} in
 the back check data are to be included in the comparisons data set.
-Variables in {varlist} are renamed with the prefix {res:bc_} in
+Variables in {varlist} are renamed with the prefix {cmd:bc_} in
 the comparisons data set.
 
 {phang}
@@ -165,14 +165,14 @@ also not value-labeled.
 {dlgtab:Options}
 
 {phang}
-{res:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{res:)}
+{cmd:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{cmd:)}
 specifies that a value of {varname} in the back check data will not
 be counted as a difference if it falls within {it:range} of the survey data.
 {it:range} may be of the form {cmd:[}{it:-x}, {it:y}{cmd:]} (absolute) or
 {cmd:[}{it:-x%}, {it:y%}{cmd:]} (relative).
 
 {phang}
-{res:nodiff(}{it:# string} [, {it:# string} ...]{res:)} specifies that
+{cmd:nodiff(}{it:# string} [, {it:# string} ...]{cmd:)} specifies that
 back check responses that equal {it:#} (for numeric variables) or
 {it:string} (for string variables) will not be counted as differences,
 regardless of what the survey response is.
@@ -189,7 +189,7 @@ multiple back check survey versions.
 {phang}
 {opt nosymbol} replaces the following characters in string variables with
 a space before comparing:
-{res:. , ! ? ' / ; : ( ) ` ~ @ # $ % ^ & * - _ + = [ ] { } | \ " < >}
+{cmd:. , ! ? ' / ; : ( ) ` ~ @ # $ % ^ & * - _ + = [ ] { } | \ " < >}
 
 {phang}
 {opt trim} removes leading or trailing blanks and
