@@ -19,8 +19,15 @@ program define cscript_bcstats, rclass
 
 	drop _all
 	label drop _all
-	macro drop _all
+
+	mata: st_local("globals",  invtokens(st_dir("global", "macro", "*")'))
+	mata: st_local("sglobals", invtokens(st_dir("global", "macro", "S_*")'))
+	local exclude `sglobals' F2 F4 F5 F6 F7 F8 F9 FASTCDPATH
+	local globals : list globals - exclude
+	if `:list sizeof globals' ///
+		macro drop `globals'
 	macro drop S_*
+
 	program drop _all
 	scalar drop _all
 	matrix drop _all
