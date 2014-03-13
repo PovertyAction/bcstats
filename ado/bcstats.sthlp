@@ -201,7 +201,8 @@ this occurs after symbols are replaced with a space.
 {marker examples}{...}
 {title:Examples}
 
-{pstd}Assume that missing values were not asked in the back check survey version.{p_end}
+{pstd}Assume that missing values were not asked in
+the back check survey version.{p_end}
 {phang2}{cmd:bcstats, surveydata(bcstats_survey) bcdata(bcstats_bc) id(id) ///}{p_end}
 {phang3}{cmd:okrate(0.09) okrange(gameresult [-1, 1], itemssold [-5%, 5%]) exclude(. "") ///}{p_end}
 {phang3}{cmd:t1vars(gender) enumerator(enum) enumteam(enumteam) backchecker(bcer) ///}{p_end}
