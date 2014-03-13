@@ -117,59 +117,85 @@ stability checks for type 2 and type 3 variables.
 
 {phang}
 {marker type1}
-{opth t1vars(varlist)} specifies the list of type 1 variables. Type 1 variables are expected to stay constant between the survey and back check, and
-differences may result in action against the enumerator. Display variables with high error rates and complete enumerator checks.
+{opth t1vars(varlist)} specifies the list of type 1 variables.
+Type 1 variables are expected to stay constant between
+the survey and back check, and differences may result in action against
+the enumerator. Display variables with high error rates and
+complete enumerator checks.
 
 {phang}
 {marker type2}
-{opth t2vars(varlist)} specifies the list of type 2 variables. Type 2 variables may be difficult for enumerators to administer. For example, they
-might involve complicated skip patterns or many examples. Differences may indicate the need for further training, but will not result in action
-against the enumerator. Display the error rates of all variables and complete enumerator and stability checks.
+{opth t2vars(varlist)} specifies the list of type 2 variables.
+Type 2 variables may be difficult for enumerators to administer.
+For instance, they may involve complicated skip patterns or many examples.
+Differences may indicate the need for further training,
+but will not result in action against the enumerator.
+Display the error rates of all variables and
+complete enumerator and stability checks.
 
 {phang}
 {marker type3}
-{opth t3vars(varlist)} specifies the list of type 3 variables. Type 3 variables are variables whose stability between the survey and back check is
-of interest. Differences will not result in action against the enumerator. Display the error rates of all variables and complete stability checks.
+{opth t3vars(varlist)} specifies the list of type 3 variables.
+Type 3 variables are variables whose stability between
+the survey and back check is of interest.
+Differences will not result in action against the enumerator.
+Display the error rates of all variables and complete stability checks.
 
 {dlgtab:Stability checks}
 
 {phang}
-{opt level(#)} specifies the confidence level, as a percentage, for confidence intervals calculated by {help ttest}. The default is {cmd:level(95)}
-or as set by {help set level}.
+{opt level(#)} specifies the confidence level, as a percentage, for
+confidence intervals calculated by {help ttest}.
+The default is {cmd:level(95)} or as set by {help set level}.
 
 {dlgtab:Comparisons data set}
 
 {phang}
-{opth keepbc(varlist)} specifies that variables in {varlist} in the back check data are to be included in the comparisons data set. Variables in
-{varlist} are renamed with the prefix {res:bc_} in the comparisons data set.
+{opth keepbc(varlist)} specifies that variables in {varlist} in
+the back check data are to be included in the comparisons data set.
+Variables in {varlist} are renamed with the prefix {res:bc_} in
+the comparisons data set.
 
 {phang}
-{opt nolabel} specifies that survey and back check responses are not to be value-labeled in the comparisons data set. Variables specified through
-{opt keepsurvey} or {opt keepbc} are also not value-labeled.
+{opt nolabel} specifies that survey and back check responses are
+not to be value-labeled in the comparisons data set.
+Variables specified through {opt keepsurvey} or {opt keepbc} are
+also not value-labeled.
 
 {dlgtab:Options}
 
 {phang}
-{res:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{res:)} specifies that a value of {varname} in the back check data will not be
-counted as a difference if it falls within {it:range} of the survey data. {it:range} may be of the form [{it:-x}, {it:y}] (absolute) or [{it:-x%},
-{it:y%}] (relative).
+{res:okrange(}{varname} {it:range} [, {varname} {it:range} ...]{res:)}
+specifies that a value of {varname} in the back check data will not
+be counted as a difference if it falls within {it:range} of the survey data.
+{it:range} may be of the form {cmd:[}{it:-x}, {it:y}{cmd:]} (absolute) or
+{cmd:[}{it:-x%}, {it:y%}{cmd:]} (relative).
 
 {phang}
-{res:nodiff(}{it:# string} [, {it:# string} ...]{res:)} specifies that back check responses that equal {it:#} (for numeric variables) or {it:string}
-(for string variables) will not be counted as differences, regardless of what the survey response is.
+{res:nodiff(}{it:# string} [, {it:# string} ...]{res:)} specifies that
+back check responses that equal {it:#} (for numeric variables) or
+{it:string} (for string variables) will not be counted as differences,
+regardless of what the survey response is.
 
 {phang}
-{opt exclude(# string)} specifies that back check responses that equal {it:#} (for numeric variables) or {it:string} (for string variables) will not
-be compared. These responses will not affect error rates and will not appear in the comparisons data set. Used when the back check data set contains
-data for multiple back check survey versions.
+{opt exclude(# string)} specifies that
+back check responses that equal {it:#} (for numeric variables) or
+{it:string} (for string variables) will not be compared.
+These responses will not affect error rates and
+will not appear in the comparisons data set.
+Used when the back check data set contains data for
+multiple back check survey versions.
 
 {phang}
-{opt nosymbol} replaces the following characters in string variables with a space before comparing:
+{opt nosymbol} replaces the following characters in string variables with
+a space before comparing:
 {res:. , ! ? ' / ; : ( ) ` ~ @ # $ % ^ & * - _ + = [ ] { } | \ " < >}
 
 {phang}
-{opt trim} removes leading or trailing blanks and multiple, consecutive internal blanks before comparing. If {opt nosymbol} is specified, this
-occurs after symbols are replaced with a space.
+{opt trim} removes leading or trailing blanks and
+multiple, consecutive internal blanks before comparing.
+If {opt nosymbol} is specified,
+this occurs after symbols are replaced with a space.
 
 
 {marker examples}{...}
