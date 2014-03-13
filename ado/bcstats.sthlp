@@ -104,8 +104,10 @@ required.{p_end}
 {title:Description}
 
 {pstd}
-{cmd:bcstats} compares back check data and survey data, producing a data set of comparisons. It completes enumerator checks for type 1 and type 2
-variables and stability checks for type 2 and type 3 variables.
+{cmd:bcstats} compares back check data and survey data,
+producing a data set of comparisons.
+It completes enumerator checks for type 1 and type 2 variables and
+stability checks for type 2 and type 3 variables.
 
 
 {marker options}{...}
