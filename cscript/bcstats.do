@@ -26,6 +26,7 @@ di "`:environment computername'"
 clear
 clear matrix
 clear mata
+set varabbrev off
 set type float
 set more off
 pause off
@@ -66,6 +67,24 @@ while `:list sizeof csv' {
 
 	cd ..
 }
+
+
+/* -------------------------------------------------------------------------- */
+					/* basic				*/
+
+cd 1
+
+* varlist abbreviation
+forv i = 1/3 {
+	bcstats, surveydata(bcstats_survey) bcdata(bcstats_bc) id(id) ///
+		t`i'vars(gender) replace
+	loc cmd bcstats, surveydata(bcstats_survey) bcdata(bcstats_bc) id(id) ///
+		t`i'vars(ge) replace
+	rcof "noi `cmd'" == 111
+	varabbrev `cmd'
+}
+
+cd ..
 
 
 /* -------------------------------------------------------------------------- */

@@ -28,6 +28,25 @@ program bcstats, rclass
 		}
 	}
 
+	preserve
+
+	* Unabbreviate and expand varlists.
+	loc optssurvey id t1vars t2vars t3vars enumerator enumteam ///
+		ttest signrank keepsurvey
+	loc optsbc backchecker bcteam keepbc
+	foreach data in survey bc {
+		loc fn : copy loc `data'data
+		qui d using `"`fn'"'
+		if r(N) ///
+			qui u in 1 using `"`fn'"', clear
+		else ///
+			qui u `"`fn'"', clear
+
+		foreach opt of loc opts`data' {
+			unab `opt' : ``opt'', min(0)
+		}
+	}
+
 	* t1vars, t2vars, t3vars
 	loc tvars `t1vars' `t2vars' `t3vars'
 	if "`tvars'" == "" {
@@ -203,8 +222,6 @@ program bcstats, rclass
 		di as err "options lower and upper are mutually exclusive"
 		ex 198
 	}
-
-	preserve
 
 	loc surveyname survey
 	loc bcname back check
