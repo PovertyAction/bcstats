@@ -110,6 +110,15 @@ It completes enumerator checks for type 1 and type 2 variables and
 stability checks for type 2 and type 3 variables.
 
 
+{marker remarks}{...}
+{title:Remarks}
+
+{pstd}
+The GitHub repository for {cmd:bcstats} is
+{browse "https://github.com/PovertyAction/bcstats":here}.
+Previous versions may be found there: search the tags.
+
+
 {marker options}{...}
 {title:Options}
 
