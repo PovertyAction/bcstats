@@ -52,12 +52,12 @@ and all variables for all enumerators{p_end}
 
 {syntab:Stability checks}
 {synopt:{opth ttest(varlist)}}run paired two-sample mean-comparison tests for
-{varlist} in the back check and survey data using {help ttest}{p_end}
-{synopt:{opt l:evel(#)}}set confidence level for {help ttest};
+{varlist} in the back check and survey data using {helpb ttest}{p_end}
+{synopt:{opt l:evel(#)}}set confidence level for {helpb ttest};
 default is {cmd:level(95)}{p_end}
 {synopt:{opth signrank(varlist)}}run
 Wilcoxon matched-pairs signed-ranks tests for {varlist} in
-the back check and survey data using {help signrank}{p_end}
+the back check and survey data using {helpb signrank}{p_end}
 
 {syntab:Comparisons data set}
 {synopt:{opth keepsu:rvey(varlist)}}include {varlist} in the survey data in
@@ -145,8 +145,8 @@ Display the error rates of all variables and complete stability checks.
 
 {phang}
 {opt level(#)} specifies the confidence level, as a percentage, for
-confidence intervals calculated by {help ttest}.
-The default is {cmd:level(95)} or as set by {help set level}.
+confidence intervals calculated by {helpb ttest}.
+The default is {cmd:level(95)} or as set by {helpb set level}.
 
 {dlgtab:Comparisons data set}
 
