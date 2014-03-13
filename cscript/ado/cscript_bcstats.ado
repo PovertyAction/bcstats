@@ -10,14 +10,14 @@ program define cscript , rclass
 	di in smcl in gr "{hline `dup'}" `"BEGIN `stuff'"'
 
 	mac shift			/* adofile[s] */
-	while "`1'" != "" { 
+	while "`1'" != "" {
 		di
 		di "-> which `1'"
 		which `1'
 		mac shift
 	}
 
-	drop _all 
+	drop _all
 	label drop _all
 	macro drop _all
 	macro drop S_*
@@ -27,7 +27,7 @@ program define cscript , rclass
 	constraint drop _all
 	discard
 	mata: mata clear
-	set type float 
+	set type float
 	set maxiter 100
 	set scheme s2color8
 	set emptycells keep
