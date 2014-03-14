@@ -273,8 +273,8 @@ program bcstats, rclass
 	loc surveyname survey
 	loc bcname back check
 	* "advars" suffix for "administrator variables"
-	loc surveyadvars enumerator enumteam
-	loc bcadvars backchecker bcteam
+	loc surveyadvars `enumerator' `enumteam'
+	loc bcadvars `backchecker' `bcteam'
 	foreach data in survey bc {
 		use `"``data'data'"'
 
