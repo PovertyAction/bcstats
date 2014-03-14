@@ -99,33 +99,12 @@ program bcstats, rclass
 		}
 	}
 
-	* showid
-	loc showid = trim("`showid'")
-	if "`showid'" == "" loc showid 30%
-	else {
-		if `:word count `showid'' > 1 {
-			di as err "invalid option showid"
-			ex 198
-		}
-		loc perc = substr("`showid'", -1, 1) == "%"
-		if `perc' loc num = substr("`showid'", 1, length("`showid'") - 1)
-		else loc num `showid'
-		cap confirm n `num'
-		if _rc {
-			di as err "invalid option showid"
-			ex 198
-		}
-		if `perc' {
-			if !inrange(`num', 0, 100) {
-				di as err "showid rate must be between 0% and 100%"
-				ex 198
-			}
-		}
-		else if `num' < 0 {
-			di as err "showid value must be nonnegative"
-			ex 198
-		}
-	}
+	* Parse -showid()-.
+	if !`:length loc showid' ///
+		loc showid 30%
+	parse_showid `showid'
+	loc showid_val  `s(val)'
+	loc showid_perc `s(perc)'
 
 	* stability checks
 	foreach option in ttest signrank {
@@ -754,13 +733,13 @@ program bcstats, rclass
 			}
 
 			* back checks with high error rates (option showid)
-			if substr("`showid'", -1, 1) == "%" {
-				loc if error_rate >= `=`=substr("`showid'", 1, length("`showid'") - 1)' / 100'
+			if `showid_perc' {
+				loc if error_rate >= `showid_val' / 100
 				loc message Displaying back checks with error rates of at least {res:`showid'}...
 			}
 			else {
-				loc if differences >= `showid'
-				loc message Displaying back checks with at least {res:`showid'} `=plural(`showid', "difference")'...
+				loc if differences >= `showid_val'
+				loc message Displaying back checks with at least {res:`showid_val'} `=plural(`showid_val', "difference")'...
 			}
 			errorrate if `if', type(`type') by1(`id') message("`message'") keep
 			qui count if `if' & type == `type'
@@ -924,6 +903,41 @@ pr parse_okrange, sclass
 	sret loc perc		`allperc'
 	sret loc min		`allmin'
 	sret loc max		`allmax'
+end
+
+pr parse_showid, sclass
+	if `:list sizeof 0' > 1 {
+		di as err "option showid() invalid"
+		ex 198
+	}
+
+	mata: st_local("perc", strofreal(substr(st_local("0"), -1, 1) == "%"))
+	if !`perc' ///
+		loc val : copy loc 0
+	else {
+		mata: st_local("val", ///
+			substr(st_local("0"), 1, strlen(st_local("0")) - 1))
+	}
+
+	cap confirm n `val'
+	if _rc {
+		di as err "option showid() invalid"
+		ex 198
+	}
+
+	if `perc' {
+		if !inrange(`val', 0, 100) {
+			di as err "showid rate must be between 0% and 100%"
+			ex 198
+		}
+	}
+	else if `val' < 0 {
+		di as err "showid value must be nonnegative"
+		ex 198
+	}
+
+	sret loc val  `val'
+	sret loc perc `perc'
 end
 
 pr error_unab_diff
