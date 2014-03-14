@@ -864,6 +864,10 @@ program bcstats, rclass
 	}
 end
 
+
+/* -------------------------------------------------------------------------- */
+					/* parsing programs		*/
+
 pr parse_okrange, sclass
 	while `:length loc 0' {
 		gettoken varmin 0 : 0, parse(",")
@@ -952,6 +956,13 @@ pr parse_okrange, sclass
 	sret loc max		`allmax'
 end
 
+					/* parsing programs		*/
+/* -------------------------------------------------------------------------- */
+
+
+/* -------------------------------------------------------------------------- */
+					/* -errorrate-			*/
+
 * show table of error rates and save error rates matrix in r(rates)
 pr errorrate, rclass
 	qui gen differences = .
@@ -1035,3 +1046,5 @@ pr errorrate, rclass
 	if "`keep'" == "" drop differences total error_rate
 end
 
+					/* -errorrate-			*/
+/* -------------------------------------------------------------------------- */
