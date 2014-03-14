@@ -372,66 +372,6 @@ program bcstats, rclass
 		}
 	}
 
-	* okrange
-	while "`okrange'" != "" {
-		gettoken varmin okrange : okrange, parse(",")
-		gettoken comma  okrange : okrange, parse(",")
-		gettoken max    okrange : okrange, parse(",")
-		gettoken comma  okrange : okrange, parse(",")
-
-		gettoken v min : varmin
-		cap unab var : `v'
-		if _rc {
-			di as err "option okrange: variable `v' not found"
-			ex 111
-		}
-		if `:word count `var'' > 1 {
-			di as err "option okrange: `v' specifies too many variables"
-			ex 103
-		}
-		if !`:list var in tvars' {
-			di as err "option okrange: `var' not type 1, type 2, or type 3 variable"
-			ex 198
-		}
-		if `:list var in rangevars' {
-			di as err "option okrange: multiple ranges attached to `var'"
-			ex 198
-		}
-		loc rangevars : list rangevars | var
-
-		loc min = trim("`min'")
-		loc max = trim("`max'")
-		if substr("`min'", 1, 1) != "[" | substr("`max'", -1, 1) != "]" {
-			di as err "invalid option okrange"
-			ex 198
-		}
-		loc min = substr("`min'", 2, .)
-		loc max = substr("`max'", 1, length("`max'") - 1)
-		if wordcount("`min'") > 1 | wordcount("`max'") > 1 {
-			di as err "option okrange: invalid range"
-			ex 198
-		}
-		loc `var'perc = strpos("`min'", "%")
-		if ``var'perc' + strpos("`max'", "%") == 1 {
-			di as err "option okrange: range endpoints must be both absolute or both relative"
-			ex 198
-		}
-		if ``var'perc' {
-			loc min = substr("`min'", 1, length("`min'") - 1)
-			loc max = substr("`max'", 1, length("`max'") - 1)
-		}
-		if `min' > `max' {
-			di as err "option okrange: range min greater than max"
-			ex 198
-		}
-		if `min' > 0 | `max' < 0 {
-			di as err "option okrange: range does not include 0"
-			ex 198
-		}
-		loc `var'min `min'
-		loc `var'max `max'
-	}
-
 	foreach data in survey bc {
 		use "``data'data'"
 
