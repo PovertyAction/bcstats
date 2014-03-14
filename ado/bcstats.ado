@@ -940,12 +940,3 @@ pr errorrate, rclass
 	if "`keep'" == "" drop differences total error_rate
 end
 
-* Changes history
-* 1.0.0. Nov 3, 2011.
-* 1.1.0. Nov 18, 2011.
-*	Data set in memory does not need to be empty or saved.
-*	Fixed bug with options lower, upper, nosymbol, and trim.
-* 1.2.0. Dec 7, 2011.
-*	Errors if there are no observations.
-* 1.2.1. Dec 20, 2011.
-*	Help file modified.
