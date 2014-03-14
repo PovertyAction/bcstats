@@ -29,22 +29,6 @@ program bcstats, rclass
 	loc okrange_perc	`s(perc)'
 	loc okrange_min		`s(min)'
 	loc okrange_max		`s(max)'
-	* strings
-	foreach option in surveydata bcdata id t1vars t2vars t3vars enumerator backchecker enumteam bcteam showid ttest signrank keepsurvey keepbc ///
-		filename okrange {
-		loc temp : subinstr loc `option' `"""' "", count(loc dq)
-		if `dq' {
-			di as err `"option `option' cannot contain ""'
-			ex 198
-		}
-	}
-	foreach option in id t1vars t2vars t3vars enumerator backchecker enumteam bcteam showid ttest signrank keepsurvey keepbc okrange {
-		loc temp : subinstr loc `option' "'" "", count(loc csq)
-		if `csq' {
-			di as err "option `option' cannot contain '"
-			ex 198
-		}
-	}
 
 	preserve
 
