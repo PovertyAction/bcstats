@@ -963,10 +963,9 @@ pr parse_opt_varlists
 
 		foreach opt of loc optsboth {
 			loc max = cond(`:list opt in varname', "max(1)", "")
-			cap noi unab `opt'`data' : ``opt'', min(0) `max'
+			cap noi unab `opt'`data' : ``opt'', min(0) `max' name(`opt'())
 			if _rc {
 				di as err "in `dataname'"
-				di as err "option `opt'() invalid"
 				ex `=_rc'
 			}
 		}
@@ -984,11 +983,7 @@ pr parse_opt_varlists
 
 		foreach opt of loc opts`data' {
 			loc max = cond(`:list opt in varname', "max(1)", "")
-			cap noi unab `opt' : ``opt'', min(0) `max'
-			if _rc {
-				di as err "option `opt'() invalid"
-				ex `=_rc'
-			}
+			unab `opt' : ``opt'', min(0) `max' name(`opt'())
 		}
 	}
 
