@@ -354,7 +354,7 @@ program bcstats, rclass
 	}
 
 	foreach data in survey bc {
-		use "``data'data'"
+		use `"``data'data'"'
 
 		* number of observations
 		if !_N {
@@ -647,8 +647,8 @@ program bcstats, rclass
 	* save as .csv/.dta
 	loc csvwarn 0
 	if "`dta'" == "" {
-		qui outsheet using "`filename'", c `replace'
-		qui insheet using "`filename'", c clear non
+		qui outsheet using `"`filename'"', c `replace'
+		qui insheet  using `"`filename'"', c non clear
 		qui ds
 		foreach var in `r(varlist)' {
 			if mi(`var'[1]) {
@@ -659,7 +659,7 @@ program bcstats, rclass
 	}
 	else {
 		qui compress
-		qui save "`filename'", `replace'
+		qui save `"`filename'"', `replace'
 	}
 	***end***
 
