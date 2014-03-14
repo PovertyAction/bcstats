@@ -225,73 +225,6 @@ program bcstats, rclass
 		ex 198
 	}
 
-	loc surveyname survey
-	loc bcname back check
-	* adopts: "administrator options"
-	loc surveyadopts enumerator enumteam
-	loc bcadopts backchecker bcteam
-	foreach data in survey bc {
-		* file
-		cap use "``data'data'", clear
-		if _rc {
-			di as err "invalid option `data'data"
-			ex 198
-		}
-
-		* confirm variables
-		foreach option in id t1vars t2vars t3vars ttest signrank {
-			if "``option''" != "" {
-				foreach v of loc `option' {
-					cap unab temp : `v'
-					if _rc {
-						di as err "option `option': variable `v' not found in ``data'name' data"
-						ex 111
-					}
-				}
-				unab `data'`option' : ``option''
-			}
-		}
-		if "`keep`data''" != "" {
-			foreach v of loc keep`data' {
-				cap unab temp : `v'
-				if _rc {
-					di as err "option keep`data': variable `v' not found"
-					ex 111
-				}
-			}
-			unab keep`data' : `keep`data''
-		}
-		foreach option of loc `data'adopts {
-			loc nvars : word count ``option''
-			if `nvars' > 1 {
-				di as err "option `option': too many variables specified"
-				ex 103
-			}
-			else if `nvars' == 1 {
-				foreach v of loc `option' {
-					cap unab temp : `v'
-					if _rc {
-						di as err "option `option': variable `v' not found"
-						ex 111
-					}
-				}
-				unab `option' : ``option''
-				if `:word count ``option''' > 1 {
-					di as err "option `option': too many variables specified"
-					ex 103
-				}
-			}
-			loc `data'advars : list `data'advars | `option'
-		}
-	}
-	foreach option in id t1vars t2vars t3vars ttest signrank {
-		if !`:list survey`option' === bc`option'' {
-			di as err "option `option': ``option'' expands or unabbreviates to different variable lists in survey and back check data"
-			ex 198
-		}
-		loc `option' : copy loc survey`option'
-	}
-
 	* duplicate variable specification
 	* within options
 	foreach option in id t1vars t2vars t3vars enumerator enumteam backchecker bcteam ttest signrank keepsurvey keepbc {
@@ -337,6 +270,11 @@ program bcstats, rclass
 		}
 	}
 
+	loc surveyname survey
+	loc bcname back check
+	* "advars" suffix for "administrator variables"
+	loc surveyadvars enumerator enumteam
+	loc bcadvars backchecker bcteam
 	foreach data in survey bc {
 		use `"``data'data'"'
 
