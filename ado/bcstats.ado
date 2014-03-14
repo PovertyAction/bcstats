@@ -34,7 +34,7 @@ program bcstats, rclass
 
 	* Unabbreviate and expand varlists.
 	#d ;
-	unab_opts,
+	parse_opt_varlists,
 		surveydata(`"`surveydata'"') bcdata(`"`bcdata'"') rangevars(`rangevars')
 		`id' `t1vars' `t2vars' `t3vars' `ttest' `signrank'
 		`enumerator' `enumteam' `keepsurvey'
@@ -938,7 +938,7 @@ pr error_unab_diff
 	ex 198
 end
 
-pr unab_opts
+pr parse_opt_varlists
 	loc optsboth	id t1vars t2vars t3vars ttest signrank
 	loc optssurvey	enumerator enumteam keepsurvey
 	loc optsbc		backchecker bcteam keepbc
