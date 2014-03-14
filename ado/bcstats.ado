@@ -301,12 +301,6 @@ program bcstats, rclass
 			ex 459
 		}
 
-		* id types
-		foreach var of loc id {
-			cap confirm numeric v `id'
-			loc isnumid`data' `isnumid`data'' `=!_rc'
-		}
-
 		* bc_ prefix
 		cap ds bc_*
 		if !_rc {
@@ -375,12 +369,6 @@ program bcstats, rclass
 		tempfile `data'
 		qui save ``data''
 	}
-
-	* id types
-	if !`:list isnumidsurvey == isnumidbc' {
-		di as err "id types differ in survey and back check data"
-		ex 198
-	}
 	***end***
 
 	***produce data set***
@@ -400,16 +388,6 @@ program bcstats, rclass
 		l `id' if _merge == 1, noo
 	}
 	qui drop if _merge != 3
-
-	* tvars types
-	foreach var of loc tvars {
-		qui ds `var' bc_`var', has(type numeric)
-		if `:word count `r(varlist)'' == 1 {
-			if "`r(varlist)'" == "`var'" di as err "variable `var' is numeric in the survey data and string in the back check data"
-			else di as err "variable `var' is string in the survey data and numeric in the back check data"
-			ex 198
-		}
-	}
 
 	* attach survey value labels to back check tvars if not labeled and vice versa
 	foreach var of loc tvars {
@@ -876,6 +854,14 @@ pr error_unab_diff
 	ex 198
 end
 
+pr error_type_diff
+	syntax name, opt(name)
+
+	di as err "option `opt'(): " ///
+		"`namelist' is numeric in one dataset and string in the other"
+	ex 198
+end
+
 pr parse_opt_varlists
 	loc optsboth	id t1vars t2vars t3vars ttest signrank
 	loc optssurvey	enumerator enumteam keepsurvey
@@ -906,6 +892,13 @@ pr parse_opt_varlists
 				di as err "in `dataname'"
 				ex `=_rc'
 			}
+
+			* Sorting because even if `opt'survey and `opt'bc contain the same
+			* variables, they may be in different orders.
+			foreach var in `:list sort `opt'`data'' {
+				cap conf numeric var `var'
+				loc `opt'`data'isnum ``opt'`data'isnum' `=!_rc'
+			}
 		}
 
 		foreach var of loc rangevars {
@@ -917,6 +910,8 @@ pr parse_opt_varlists
 			}
 
 			loc rangevars`data' `rangevars`data'' `unab'
+			cap conf numeric var `var'
+			loc rangevars`data'isnum `rangevars`data'isnum' `=!_rc'
 		}
 
 		foreach opt of loc opts`data' {
@@ -931,21 +926,40 @@ pr parse_opt_varlists
 			/*NOTREACHED*/
 		}
 		loc `opt' ``opt'survey'
+
+		loc sort : list sort `opt'
+		forv i = 1/`:list sizeof sort' {
+			loc var :			word `i' of `sort'
+			loc isnumsurvey :	word `i' of ``opt'surveyisnum'
+			loc isnumbc :		word `i' of ``opt'bcisnum'
+
+			if `isnumsurvey' != `isnumbc' {
+				error_type_diff `var', opt(`opt')
+				/*NOTREACHED*/
+			}
+		}
 	}
 
 	forv i = 1/`:list sizeof rangevars' {
 		loc var	:			word `i' of `rangevars'
 		loc varsurvey :		word `i' of `rangevarssurvey'
 		loc varbc :			word `i' of `rangevarsbc'
+		loc isnumsurvey :	word `i' of `rangevarssurveyisnum'
+		loc isnumbc :		word `i' of `rangevarsbcisnum'
 
-		if !`:list varsurvey === varbc' {
-			error_unab_diff "`var'", opt(`opt')
+		if "`varsurvey'" != "`varbc'" {
+			error_unab_diff `var', opt(okrange)
+			/*NOTREACHED*/
+		}
+
+		if `isnumsurvey' != `isnumbc' {
+			error_type_diff `varsurvey', opt(okrange)
 			/*NOTREACHED*/
 		}
 	}
+	loc rangevars `rangevarssurvey'
 
-	c_local rangevars "`rangevarssurvey'"
-	foreach opt of loc opts {
+	foreach opt in `opts' rangevars {
 		c_local `opt' "``opt''"
 	}
 end
