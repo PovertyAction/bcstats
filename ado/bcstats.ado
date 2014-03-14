@@ -11,6 +11,13 @@ program bcstats, rclass
 		[LOwer UPper NOSymbol TRim]
 
 	***check syntax***
+
+	* Parse -okrange()-.
+	parse_okrange `okrange'
+	loc rangevars		"`s(varlist)'"
+	loc okrange_perc	`s(perc)'
+	loc okrange_min		`s(min)'
+	loc okrange_max		`s(max)'
 	* strings
 	foreach option in surveydata bcdata id t1vars t2vars t3vars enumerator backchecker enumteam bcteam showid ttest signrank keepsurvey keepbc ///
 		filename okrange {
@@ -855,6 +862,94 @@ program bcstats, rclass
 			`:word `i' of `ret`ret'''
 		}
 	}
+end
+
+pr parse_okrange, sclass
+	while `:length loc 0' {
+		gettoken varmin 0 : 0, parse(",")
+		gettoken comma1 0 : 0, parse(",")
+		gettoken max    0 : 0, parse(",")
+		gettoken comma2 0 : 0, parse(",")
+
+		if "`comma1'" != "," | !inlist("`comma2'", ",", "") {
+			di as err "option okrange() invalid"
+			ex 198
+		}
+
+		* Parse the varname.
+		gettoken var min : varmin
+		if `:list sizeof var' > 1 {
+			di as err "option okrange(): `var': too many variables specified"
+			ex 103
+		}
+		loc vars "`vars' `"`var'"'"
+
+		* Parse the min and the max.
+
+		if `:list sizeof min' > 1 | `:list sizeof max' > 1 {
+			di as err "option okrange() invalid"
+			ex 198
+		}
+
+		* Remove the brackets.
+		* Remove leading and trailing white space.
+		loc min : list retok min
+		loc max : list retok max
+		mata: st_local("maxlast", substr(st_local("max"), -1, 1))
+		if substr("`min'", 1, 1) != "[" | "`maxlast'" != "]" {
+			di as err "option okrange() invalid"
+			ex 198
+		}
+		loc min : subinstr loc min "[" ""
+		mata: st_local("max", ///
+			substr(st_local("max"), 1, strlen(st_local("max")) - 1))
+
+		* Parse percentages.
+		foreach local in min max {
+			mata: st_local("`local'perc", ///
+				strofreal(substr(st_local("`local'"), -1, 1) == "%"))
+			if ``local'perc' {
+				mata: st_local("`local'", substr(st_local("`local'"), 1, ///
+					strlen(st_local("`local'")) - 1))
+			}
+		}
+		if `minperc' + `maxperc' == 1 {
+			di as err "option okrange(): range endpoints must be " ///
+				"both absolute or both relative"
+			ex 198
+		}
+		loc allperc `allperc' `minperc'
+
+		cap conf n `min'
+		if _rc {
+			di as err "option okrange(): invalid minimum"
+			ex 198
+		}
+
+		cap conf n `max'
+		if _rc {
+			di as err "option okrange(): invalid maximum"
+			ex 198
+		}
+
+		if `min' > `max' {
+			di as err "option okrange(): range minimum greater than maximum"
+			ex 198
+		}
+
+		if `min' > 0 | `max' < 0 {
+			di as err "option okrange(): range does not include 0"
+			ex 198
+		}
+
+		loc allmin `allmin' `min'
+		loc allmax `allmax' `max'
+	}
+
+	sret loc varlist	"`vars'"
+	sret loc perc		`allperc'
+	sret loc min		`allmin'
+	sret loc max		`allmax'
 end
 
 * show table of error rates and save error rates matrix in r(rates)
