@@ -114,19 +114,21 @@ program bcstats, rclass
 		}
 	}
 
-	* filename, dta, replace
-	loc type = cond("`dta'" == "", "csv", "dta")
-	if "`filename'" == "" loc filename bc_diffs.`type'
-	else if substr("`filename'", -4, 4) != ".`type'" loc filename `filename'.`type'
-	cap confirm new f "`filename'"
-	if "`replace'" == "" & _rc confirm new f "`filename'"
-	else if "`replace'" != "" {
-		if !inlist(_rc, 0, 602) confirm new f "`filename'"
-		else if _rc == 602 {
-			tempfile temp
-			copy "`filename'" `temp'
-			copy `temp' "`filename'", replace
-		}
+	* Parse -filename()-.
+	loc ext = cond("`dta'" == "", ".csv", ".dta")
+	if !`:length loc filename' ///
+		loc filename bc_diffs`ext'
+	else {
+		* Add a file extension to `filename' if necessary.
+		mata: if (pathsuffix(st_local("filename")) == "") ///
+			st_local("filename", st_local("filename") + st_local("ext"));;
+	}
+
+	* Check -filename()- and -replace-.
+	cap conf new f `"`filename'"'
+	if ("`replace'" == "" & _rc) | ("`replace'" != "" & !inlist(_rc, 0, 602)) {
+		conf new f `"`filename'"'
+		ex `=_rc'
 	}
 
 	* okrate, showall
