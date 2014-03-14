@@ -1,14 +1,25 @@
 *! version 1.2.1  20dec2011
 program bcstats, rclass
 	vers 9
-	syntax, ///
-		Surveydata(str) Bcdata(str) id(str) ///
-		[t1vars(str) ENUMerator(str) BACKchecker(str) ENUMTeam(str) BCTeam(str) SHowid(str) showall] ///
-		[t2vars(str)] ///
-		[t3vars(str) ttest(str) Level(real -1) signrank(str)] ///
-		[KEEPSUrvey(str) keepbc(str) full NOLabel FILEname(str) replace dta] ///
-		[okrate(real 0.1) okrange(str) nodiff(str asis) exclude(str asis)] ///
+
+	#d ;
+	syntax, Surveydata(str) Bcdata(str) id(passthru)
+		/* type variables */
+		[t1vars(passthru) t2vars(passthru) t3vars(passthru)]
+		/* enumerator checks */
+		[ENUMerator(passthru) BACKchecker(passthru)
+		ENUMTeam(passthru) BCTeam(passthru) SHowid(str) showall]
+		/* stability checks */
+		[ttest(passthru) Level(real -1) signrank(passthru)]
+		/* comparisons dataset */
+		[KEEPSUrvey(passthru) keepbc(passthru) full NOLabel
+		FILEname(str) replace dta]
+		/* string comparison */
 		[LOwer UPper NOSymbol TRim]
+		/* other options */
+		[okrate(real 0.1) okrange(str) nodiff(str asis) exclude(str asis)]
+	;
+	#d cr
 
 	***check syntax***
 
@@ -38,27 +49,46 @@ program bcstats, rclass
 	preserve
 
 	* Unabbreviate and expand varlists.
-	loc optssurvey id t1vars t2vars t3vars enumerator enumteam ///
-		ttest signrank keepsurvey
-	loc optsbc backchecker bcteam keepbc
-	foreach data in survey bc {
-		loc fn : copy loc `data'data
-		qui d using `"`fn'"'
-		if r(N) ///
-			qui u in 1 using `"`fn'"', clear
-		else ///
-			qui u `"`fn'"', clear
+	#d ;
+	unab_opts,
+		surveydata(`"`surveydata'"') bcdata(`"`bcdata'"') rangevars(`rangevars')
+		`id' `t1vars' `t2vars' `t3vars' `ttest' `signrank'
+		`enumerator' `enumteam' `keepsurvey'
+		`backchecker' `bcteam' `keepbc'
+		varname(enumerator enumteam backchecker bcteam)
+	;
+	#d cr
 
-		foreach opt of loc opts`data' {
-			unab `opt' : ``opt'', min(0)
+	* Check type variables.
+	loc tvars `t1vars' `t2vars' `t3vars'
+	if !`:list sizeof tvars' {
+		* Using -icd9- as a template.
+		di as err "must specify one of options t1vars(), t2vars(), or t3vars()"
+		ex 198
+	}
+
+	* Finish checking -okrange()-.
+
+	foreach var of loc rangevars {
+		if !`:list var in tvars' {
+			di as err "option okrange(): " ///
+				"`var' not type 1, type 2, or type 3 variable"
+			ex 198
 		}
 	}
 
-	* t1vars, t2vars, t3vars
-	loc tvars `t1vars' `t2vars' `t3vars'
-	if "`tvars'" == "" {
-		di as err "must specify one of t1vars, t2vars, and t3vars options"
+	loc dups : list dups rangevars
+	gettoken first : dups
+	if "`first'" != "" {
+		di as err "option okrange(): multiple ranges specified for `first'"
 		ex 198
+	}
+
+	forv i = 1/`:list sizeof rangevars' {
+		loc var :			word `i' of `rangevars'
+		loc `var'perc :		word `i' of `okrange_perc'
+		loc `var'min :		word `i' of `okrange_min'
+		loc `var'max :		word `i' of `okrange_min'
 	}
 
 	* enumerator checks
@@ -954,6 +984,97 @@ pr parse_okrange, sclass
 	sret loc perc		`allperc'
 	sret loc min		`allmin'
 	sret loc max		`allmax'
+end
+
+pr error_unab_diff
+	syntax anything, opt(name)
+
+	gettoken anything rest : anything
+	if `:length loc rest' ///
+		err 198
+
+	di as err "option `opt'(): `anything' expands or unabbreviates to " ///
+		"different variable lists in survey and back check data"
+	ex 198
+end
+
+pr unab_opts
+	loc optsboth	id t1vars t2vars t3vars ttest signrank
+	loc optssurvey	enumerator enumteam keepsurvey
+	loc optsbc		backchecker bcteam keepbc
+	loc opts `optsboth' `optssurvey' `optsbc'
+
+	foreach opt of loc opts {
+		loc optssyntax `optssyntax' `opt'(str)
+	}
+	syntax, surveydata(str) bcdata(str) ///
+		[rangevars(str asis) varname(namelist) `optssyntax']
+
+	foreach data in survey bc {
+		loc dataname = cond("`data'" == "survey", "survey", "back check") + ///
+			" data"
+
+		loc fn : copy loc `data'data
+		qui d using `"`fn'"'
+		if r(N) ///
+			qui u in 1 using `"`fn'"', clear
+		else ///
+			qui u `"`fn'"', clear
+
+		foreach opt of loc optsboth {
+			loc max = cond(`:list opt in varname', "max(1)", "")
+			cap noi unab `opt'`data' : ``opt'', min(0) `max'
+			if _rc {
+				di as err "in `dataname'"
+				di as err "option `opt'() invalid"
+				ex `=_rc'
+			}
+		}
+
+		foreach var of loc rangevars {
+			cap noi unab unab : `var', min(0) max(1)
+			if _rc {
+				di as err "in `dataname'"
+				di as err "option okrange() invalid"
+				ex `=_rc'
+			}
+
+			loc rangevars`data' `rangevars`data'' `unab'
+		}
+
+		foreach opt of loc opts`data' {
+			loc max = cond(`:list opt in varname', "max(1)", "")
+			cap noi unab `opt' : ``opt'', min(0) `max'
+			if _rc {
+				di as err "option `opt'() invalid"
+				ex `=_rc'
+			}
+		}
+	}
+
+	foreach opt of loc optsboth {
+		if !`:list `opt'survey === `opt'bc' {
+			error_unab_diff "``opt''", opt(`opt')
+			/*NOTREACHED*/
+		}
+		loc `opt' ``opt'survey'
+	}
+
+	forv i = 1/`:list sizeof rangevars' {
+		loc var	:			word `i' of `rangevars'
+		loc varsurvey :		word `i' of `rangevarssurvey'
+		loc varbc :			word `i' of `rangevarsbc'
+
+		if !`:list varsurvey === varbc' {
+			error_unab_diff "`var'", opt(`opt')
+			/*NOTREACHED*/
+		}
+	}
+
+	c_local rangevars "`rangevarssurvey'"
+	foreach opt of loc opts {
+		c_local `opt' "``opt''"
+	}
 end
 
 					/* parsing programs		*/
