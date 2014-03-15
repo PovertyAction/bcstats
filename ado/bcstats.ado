@@ -51,7 +51,7 @@ program bcstats, rclass
 		ex 198
 	}
 
-	* Finish checking -okrange()-.
+	* Finish processing -okrange()-.
 
 	foreach var of loc rangevars {
 		if !`:list var in tvars' {
@@ -59,13 +59,6 @@ program bcstats, rclass
 				"`var' not type 1, type 2, or type 3 variable"
 			ex 198
 		}
-	}
-
-	loc dups : list dups rangevars
-	gettoken first : dups
-	if "`first'" != "" {
-		di as err "option okrange(): multiple ranges specified for `first'"
-		ex 198
 	}
 
 	forv i = 1/`:list sizeof rangevars' {
@@ -226,14 +219,6 @@ program bcstats, rclass
 	}
 
 	* duplicate variable specification
-	* within options
-	foreach option in id t1vars t2vars t3vars enumerator enumteam backchecker bcteam ttest signrank keepsurvey keepbc {
-		loc dups : list dups `option'
-		if "`dups'" != "" {
-			di as err "option `option': variable `:word 1 of `dups'' specified twice"
-			ex 198
-		}
-	}
 	* across options
 	loc alloptions `""id t1vars t2vars t3vars enumerator enumteam backchecker bcteam" "id enumerator enumteam backchecker bcteam keepsurvey" "id backchecker bcteam keepbc""'
 	foreach options of loc alloptions {
@@ -920,6 +905,8 @@ pr parse_opt_varlists
 		}
 	}
 
+	* Check for differences across the datasets.
+
 	foreach opt of loc optsboth {
 		if !`:list `opt'survey === `opt'bc' {
 			error_unab_diff "``opt''", opt(`opt')
@@ -959,6 +946,26 @@ pr parse_opt_varlists
 	}
 	loc rangevars `rangevarssurvey'
 
+	* Check for duplicates.
+
+	foreach opt of loc opts {
+		loc dups : list dups `opt'
+		gettoken first : dups
+		if "`first'" != "" {
+			di as err "option `opt'(): " ///
+				"variable `first' mentioned more than once"
+			ex 198
+		}
+	}
+
+	loc dups : list dups rangevars
+	gettoken first : dups
+	if "`first'" != "" {
+		di as err "option okrange(): multiple ranges specified for `first'"
+		ex 198
+	}
+
+	* Return parsed options.
 	foreach opt in `opts' rangevars {
 		c_local `opt' "``opt''"
 	}
