@@ -220,7 +220,13 @@ program bcstats, rclass
 
 	* duplicate variable specification
 	* across options
-	loc alloptions `""id t1vars t2vars t3vars enumerator enumteam backchecker bcteam" "id enumerator enumteam backchecker bcteam keepsurvey" "id backchecker bcteam keepbc""'
+	#d ;
+	loc alloptions "
+		"id t1vars t2vars t3vars enumerator enumteam backchecker bcteam"
+		"id enumerator enumteam backchecker bcteam keepsurvey"
+		"id backchecker bcteam keepbc"
+	";
+	#d cr
 	foreach options of loc alloptions {
 		loc nopts : word count `options'
 		forv i = 1/`=`nopts' - 1' {
@@ -228,8 +234,10 @@ program bcstats, rclass
 			forv j = `=`i' + 1'/`nopts' {
 				loc option2 : word `j' of `options'
 				loc shared : list `option1' & `option2'
-				if "`shared'" != "" {
-					di as err "variable `:word 1 of `shared'' specified in options `option1' and `option2'"
+				if `:list sizeof shared' {
+					gettoken first : shared
+					di as err "variable `first' specified in " ///
+						"options `option1'() and `option2'()"
 					ex 198
 				}
 			}
