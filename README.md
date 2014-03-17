@@ -7,7 +7,7 @@ The `develop` branch has the most up-to-date readme.
 
 This repository follows the [git-flow](http://nvie.com/posts/a-successful-git-branching-model/) model. Submit pull requests to the `develop` branch.
 
-Other `bcstats` development documents are stored on Box [here](https://ipastorage.box.com/bcstats-develop).
+Other `bcstats` development documents are stored on Box [here](https://ipastorage.box.com/bcstats-develop). This includes all project testing that contains sensitive information that does not belong on GitHub.
 
 Where a GitHub issue refers to an e-mail chain or requires an attachment, the e-mail or attachment is stored in a subfolder of the `bcstats` Box, and the issue includes a link to the Box subfolder.
 
