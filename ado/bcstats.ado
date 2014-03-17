@@ -875,8 +875,8 @@ pr parse_opt_varlists
 				ex `=_rc'
 			}
 
-			* Sorting because even if `opt'survey and `opt'bc contain the same
-			* variables, they may be in different orders.
+			* Sorting because even if ``opt'survey' and ``opt'bc' contain the
+			* same variables, they may be in different orders after -unab-.
 			foreach var in `:list sort `opt'`data'' {
 				cap conf numeric var `var'
 				loc `opt'`data'isnum ``opt'`data'isnum' `=!_rc'
@@ -884,7 +884,10 @@ pr parse_opt_varlists
 		}
 
 		foreach var of loc rangevars {
-			cap noi unab unab : `var', min(0) max(1)
+			* Do not specify -name()-: we are parsing a single varlist, not the
+			* entire option. Specifying -name()- would result in error messages
+			* that are difficult to interpret.
+			cap noi unab unab : `var', max(1)
 			if _rc {
 				di as err "in `dataname'"
 				di as err "option okrange() invalid"
@@ -894,8 +897,7 @@ pr parse_opt_varlists
 
 			cap conf numeric var `var'
 			if _rc {
-				di as err "option okrange():  `var':  " ///
-					"string variable not allowed"
+				di as err "okrange():  `var':  string variable not allowed"
 				ex 109
 			}
 		}
@@ -929,7 +931,7 @@ pr parse_opt_varlists
 			if `isnumsurvey' != `isnumbc' {
 				di as err "option `opt'(): " ///
 					"`var' is numeric in one dataset and string in the other"
-				ex 106
+				ex 109
 			}
 		}
 	}
@@ -947,6 +949,9 @@ pr parse_opt_varlists
 	loc rangevars `rangevarssurvey'
 
 	* Check numeric varlists.
+	* Placing this check here means that the error message does not have to
+	* include the dataset name: we have already confirmed that the variable is
+	* the same type in both datasets.
 	foreach opt of loc optsboth {
 		if `:list opt in numeric' {
 			loc 0 , `opt'(``opt'')
