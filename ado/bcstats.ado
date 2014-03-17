@@ -1,57 +1,72 @@
 *! version 1.2.1  20dec2011
 program bcstats, rclass
 	vers 9
-	syntax, ///
-		Surveydata(str) Bcdata(str) id(str) ///
-		[t1vars(str) ENUMerator(str) BACKchecker(str) ENUMTeam(str) BCTeam(str) SHowid(str) showall] ///
-		[t2vars(str)] ///
-		[t3vars(str) ttest(str) Level(real -1) signrank(str)] ///
-		[KEEPSUrvey(str) keepbc(str) full NOLabel FILEname(str) replace dta] ///
-		[okrate(real 0.1) okrange(str) nodiff(str asis) exclude(str asis)] ///
+
+	#d ;
+	syntax, Surveydata(str) Bcdata(str) id(passthru)
+		/* type variables */
+		[t1vars(passthru) t2vars(passthru) t3vars(passthru)]
+		/* enumerator checks */
+		[ENUMerator(passthru) BACKchecker(passthru)
+		ENUMTeam(passthru) BCTeam(passthru) SHowid(str) showall]
+		/* stability checks */
+		[ttest(passthru) Level(real -1) signrank(passthru)]
+		/* comparisons dataset */
+		[KEEPSUrvey(passthru) keepbc(passthru) full NOLabel
+		FILEname(str) replace dta]
+		/* string comparison */
 		[LOwer UPper NOSymbol TRim]
+		/* other options */
+		[okrate(real 0.1) okrange(str) nodiff(str asis) exclude(str asis)]
+	;
+	#d cr
 
 	***check syntax***
-	* strings
-	foreach option in surveydata bcdata id t1vars t2vars t3vars enumerator backchecker enumteam bcteam showid ttest signrank keepsurvey keepbc ///
-		filename okrange {
-		loc temp : subinstr loc `option' `"""' "", count(loc dq)
-		if `dq' {
-			di as err `"option `option' cannot contain ""'
-			ex 198
-		}
-	}
-	foreach option in id t1vars t2vars t3vars enumerator backchecker enumteam bcteam showid ttest signrank keepsurvey keepbc okrange {
-		loc temp : subinstr loc `option' "'" "", count(loc csq)
-		if `csq' {
-			di as err "option `option' cannot contain '"
-			ex 198
-		}
-	}
+
+	* Parse -okrange()-.
+	parse_okrange `okrange'
+	loc rangevars		"`s(varlist)'"
+	loc okrange_perc	`s(perc)'
+	loc okrange_min		`s(min)'
+	loc okrange_max		`s(max)'
 
 	preserve
 
 	* Unabbreviate and expand varlists.
-	loc optssurvey id t1vars t2vars t3vars enumerator enumteam ///
-		ttest signrank keepsurvey
-	loc optsbc backchecker bcteam keepbc
-	foreach data in survey bc {
-		loc fn : copy loc `data'data
-		qui d using `"`fn'"'
-		if r(N) ///
-			qui u in 1 using `"`fn'"', clear
-		else ///
-			qui u `"`fn'"', clear
+	#d ;
+	parse_opt_varlists,
+		surveydata(`"`surveydata'"') bcdata(`"`bcdata'"') rangevars(`rangevars')
+		`id' `t1vars' `t2vars' `t3vars' `ttest' `signrank'
+		`enumerator' `enumteam' `keepsurvey'
+		`backchecker' `bcteam' `keepbc'
+		varname(enumerator enumteam backchecker bcteam)
+		numeric(enumerator enumteam backchecker bcteam ttest signrank)
+	;
+	#d cr
 
-		foreach opt of loc opts`data' {
-			unab `opt' : ``opt'', min(0)
+	* Check type variables.
+	loc tvars `t1vars' `t2vars' `t3vars'
+	if !`:list sizeof tvars' {
+		* Using -icd9- as a template.
+		di as err "must specify one of options t1vars(), t2vars(), or t3vars()"
+		ex 198
+	}
+
+	* Finish processing -okrange()-.
+
+	foreach var of loc rangevars {
+		if !`:list var in tvars' {
+			di as err "option okrange(): " ///
+				"`var' not type 1, type 2, or type 3 variable"
+			ex 198
 		}
 	}
 
-	* t1vars, t2vars, t3vars
-	loc tvars `t1vars' `t2vars' `t3vars'
-	if "`tvars'" == "" {
-		di as err "must specify one of t1vars, t2vars, and t3vars options"
-		ex 198
+	forv i = 1/`:list sizeof rangevars' {
+		loc var :			word `i' of `rangevars'
+		loc `var'perc :		word `i' of `okrange_perc'
+		loc `var'min :		word `i' of `okrange_min'
+		loc `var'max :		word `i' of `okrange_min'
 	}
 
 	* enumerator checks
@@ -62,33 +77,12 @@ program bcstats, rclass
 		}
 	}
 
-	* showid
-	loc showid = trim("`showid'")
-	if "`showid'" == "" loc showid 30%
-	else {
-		if `:word count `showid'' > 1 {
-			di as err "invalid option showid"
-			ex 198
-		}
-		loc perc = substr("`showid'", -1, 1) == "%"
-		if `perc' loc num = substr("`showid'", 1, length("`showid'") - 1)
-		else loc num `showid'
-		cap confirm n `num'
-		if _rc {
-			di as err "invalid option showid"
-			ex 198
-		}
-		if `perc' {
-			if !inrange(`num', 0, 100) {
-				di as err "showid rate must be between 0% and 100%"
-				ex 198
-			}
-		}
-		else if `num' < 0 {
-			di as err "showid value must be nonnegative"
-			ex 198
-		}
-	}
+	* Parse -showid()-.
+	if !`:length loc showid' ///
+		loc showid 30%
+	parse_showid `showid'
+	loc showid_val  `s(val)'
+	loc showid_perc `s(perc)'
 
 	* stability checks
 	foreach option in ttest signrank {
@@ -98,19 +92,21 @@ program bcstats, rclass
 		}
 	}
 
-	* filename, dta, replace
-	loc type = cond("`dta'" == "", "csv", "dta")
-	if "`filename'" == "" loc filename bc_diffs.`type'
-	else if substr("`filename'", -4, 4) != ".`type'" loc filename `filename'.`type'
-	cap confirm new f "`filename'"
-	if "`replace'" == "" & _rc confirm new f "`filename'"
-	else if "`replace'" != "" {
-		if !inlist(_rc, 0, 602) confirm new f "`filename'"
-		else if _rc == 602 {
-			tempfile temp
-			copy "`filename'" `temp'
-			copy `temp' "`filename'", replace
-		}
+	* Parse -filename()-.
+	loc ext = cond("`dta'" == "", ".csv", ".dta")
+	if !`:length loc filename' ///
+		loc filename bc_diffs`ext'
+	else {
+		* Add a file extension to `filename' if necessary.
+		mata: if (pathsuffix(st_local("filename")) == "") ///
+			st_local("filename", st_local("filename") + st_local("ext"));;
+	}
+
+	* Check -filename()- and -replace-.
+	cap conf new f `"`filename'"'
+	if ("`replace'" == "" & _rc) | ("`replace'" != "" & !inlist(_rc, 0, 602)) {
+		conf new f `"`filename'"'
+		ex `=_rc'
 	}
 
 	* okrate, showall
@@ -217,90 +213,21 @@ program bcstats, rclass
 		ex 198
 	}
 
-	* lower, upper
+	* -lower- and -upper-
 	if "`lower'" != "" & "`upper'" != "" {
 		di as err "options lower and upper are mutually exclusive"
 		ex 198
 	}
 
-	loc surveyname survey
-	loc bcname back check
-	* adopts: "administrator options"
-	loc surveyadopts enumerator enumteam
-	loc bcadopts backchecker bcteam
-	foreach data in survey bc {
-		* file
-		cap use "``data'data'", clear
-		if _rc {
-			di as err "invalid option `data'data"
-			ex 198
-		}
-
-		* confirm variables
-		foreach option in id t1vars t2vars t3vars ttest signrank {
-			if "``option''" != "" {
-				foreach v of loc `option' {
-					cap unab temp : `v'
-					if _rc {
-						di as err "option `option': variable `v' not found in ``data'name' data"
-						ex 111
-					}
-				}
-				unab `data'`option' : ``option''
-			}
-		}
-		if "`keep`data''" != "" {
-			foreach v of loc keep`data' {
-				cap unab temp : `v'
-				if _rc {
-					di as err "option keep`data': variable `v' not found"
-					ex 111
-				}
-			}
-			unab keep`data' : `keep`data''
-		}
-		foreach option of loc `data'adopts {
-			loc nvars : word count ``option''
-			if `nvars' > 1 {
-				di as err "option `option': too many variables specified"
-				ex 103
-			}
-			else if `nvars' == 1 {
-				foreach v of loc `option' {
-					cap unab temp : `v'
-					if _rc {
-						di as err "option `option': variable `v' not found"
-						ex 111
-					}
-				}
-				unab `option' : ``option''
-				if `:word count ``option''' > 1 {
-					di as err "option `option': too many variables specified"
-					ex 103
-				}
-			}
-			loc `data'advars : list `data'advars | `option'
-		}
-	}
-	foreach option in id t1vars t2vars t3vars ttest signrank {
-		if !`:list survey`option' === bc`option'' {
-			di as err "option `option': ``option'' expands or unabbreviates to different variable lists in survey and back check data"
-			ex 198
-		}
-		loc `option' : copy loc survey`option'
-	}
-
 	* duplicate variable specification
-	* within options
-	foreach option in id t1vars t2vars t3vars enumerator enumteam backchecker bcteam ttest signrank keepsurvey keepbc {
-		loc dups : list dups `option'
-		if "`dups'" != "" {
-			di as err "option `option': variable `:word 1 of `dups'' specified twice"
-			ex 198
-		}
-	}
 	* across options
-	loc alloptions `""id t1vars t2vars t3vars enumerator enumteam backchecker bcteam" "id enumerator enumteam backchecker bcteam keepsurvey" "id backchecker bcteam keepbc""'
+	#d ;
+	loc alloptions "
+		"id t1vars t2vars t3vars enumerator enumteam backchecker bcteam"
+		"id enumerator enumteam backchecker bcteam keepsurvey"
+		"id backchecker bcteam keepbc"
+	";
+	#d cr
 	foreach options of loc alloptions {
 		loc nopts : word count `options'
 		forv i = 1/`=`nopts' - 1' {
@@ -308,8 +235,10 @@ program bcstats, rclass
 			forv j = `=`i' + 1'/`nopts' {
 				loc option2 : word `j' of `options'
 				loc shared : list `option1' & `option2'
-				if "`shared'" != "" {
-					di as err "variable `:word 1 of `shared'' specified in options `option1' and `option2'"
+				if `:list sizeof shared' {
+					gettoken first : shared
+					di as err "variable `first' specified in " ///
+						"options `option1'() and `option2'()"
 					ex 198
 				}
 			}
@@ -335,82 +264,18 @@ program bcstats, rclass
 		}
 	}
 
-	* okrange
-	while "`okrange'" != "" {
-		gettoken varmin okrange : okrange, parse(",")
-		gettoken comma  okrange : okrange, parse(",")
-		gettoken max    okrange : okrange, parse(",")
-		gettoken comma  okrange : okrange, parse(",")
-
-		gettoken v min : varmin
-		cap unab var : `v'
-		if _rc {
-			di as err "option okrange: variable `v' not found"
-			ex 111
-		}
-		if `:word count `var'' > 1 {
-			di as err "option okrange: `v' specifies too many variables"
-			ex 103
-		}
-		if !`:list var in tvars' {
-			di as err "option okrange: `var' not type 1, type 2, or type 3 variable"
-			ex 198
-		}
-		if `:list var in rangevars' {
-			di as err "option okrange: multiple ranges attached to `var'"
-			ex 198
-		}
-		loc rangevars : list rangevars | var
-
-		loc min = trim("`min'")
-		loc max = trim("`max'")
-		if substr("`min'", 1, 1) != "[" | substr("`max'", -1, 1) != "]" {
-			di as err "invalid option okrange"
-			ex 198
-		}
-		loc min = substr("`min'", 2, .)
-		loc max = substr("`max'", 1, length("`max'") - 1)
-		if wordcount("`min'") > 1 | wordcount("`max'") > 1 {
-			di as err "option okrange: invalid range"
-			ex 198
-		}
-		loc `var'perc = strpos("`min'", "%")
-		if ``var'perc' + strpos("`max'", "%") == 1 {
-			di as err "option okrange: range endpoints must be both absolute or both relative"
-			ex 198
-		}
-		if ``var'perc' {
-			loc min = substr("`min'", 1, length("`min'") - 1)
-			loc max = substr("`max'", 1, length("`max'") - 1)
-		}
-		if `min' > `max' {
-			di as err "option okrange: range min greater than max"
-			ex 198
-		}
-		if `min' > 0 | `max' < 0 {
-			di as err "option okrange: range does not include 0"
-			ex 198
-		}
-		loc `var'min `min'
-		loc `var'max `max'
-	}
-
+	loc surveyname survey
+	loc bcname back check
+	* "advars" suffix for "administrator variables"
+	loc surveyadvars `enumerator' `enumteam'
+	loc bcadvars `backchecker' `bcteam'
 	foreach data in survey bc {
-		use "``data'data'"
+		use `"``data'data'"'
 
 		* number of observations
 		if !_N {
 			di as err "no observations in ``data'name' data"
 			ex 2000
-		}
-
-		* confirm numeric variables
-		foreach var in ``data'advars' `ttest' `signrank' `rangevars' {
-			cap confirm numeric v `var'
-			if _rc {
-				di as err "'`var'' found where numeric variable expected in ``data'name' data"
-				ex 198
-			}
 		}
 
 		* isid
@@ -419,12 +284,6 @@ program bcstats, rclass
 			loc nvars : word count `id'
 			di as err "`=plural(`nvars', "variable")' `id' `=plural(`nvars', "does", "do")' not uniquely identify observations in ``data'name' data"
 			ex 459
-		}
-
-		* id types
-		foreach var of loc id {
-			cap confirm numeric v `id'
-			loc isnumid`data' `isnumid`data'' `=!_rc'
 		}
 
 		* bc_ prefix
@@ -495,12 +354,6 @@ program bcstats, rclass
 		tempfile `data'
 		qui save ``data''
 	}
-
-	* id types
-	if !`:list isnumidsurvey == isnumidbc' {
-		di as err "id types differ in survey and back check data"
-		ex 198
-	}
 	***end***
 
 	***produce data set***
@@ -520,16 +373,6 @@ program bcstats, rclass
 		l `id' if _merge == 1, noo
 	}
 	qui drop if _merge != 3
-
-	* tvars types
-	foreach var of loc tvars {
-		qui ds `var' bc_`var', has(type numeric)
-		if `:word count `r(varlist)'' == 1 {
-			if "`r(varlist)'" == "`var'" di as err "variable `var' is numeric in the survey data and string in the back check data"
-			else di as err "variable `var' is string in the survey data and numeric in the back check data"
-			ex 198
-		}
-	}
 
 	* attach survey value labels to back check tvars if not labeled and vice versa
 	foreach var of loc tvars {
@@ -689,8 +532,8 @@ program bcstats, rclass
 	* save as .csv/.dta
 	loc csvwarn 0
 	if "`dta'" == "" {
-		qui outsheet using "`filename'", c `replace'
-		qui insheet using "`filename'", c clear non
+		qui outsheet using `"`filename'"', c `replace'
+		qui insheet  using `"`filename'"', c non clear
 		qui ds
 		foreach var in `r(varlist)' {
 			if mi(`var'[1]) {
@@ -701,7 +544,7 @@ program bcstats, rclass
 	}
 	else {
 		qui compress
-		qui save "`filename'", `replace'
+		qui save `"`filename'"', `replace'
 	}
 	***end***
 
@@ -777,13 +620,13 @@ program bcstats, rclass
 			}
 
 			* back checks with high error rates (option showid)
-			if substr("`showid'", -1, 1) == "%" {
-				loc if error_rate >= `=`=substr("`showid'", 1, length("`showid'") - 1)' / 100'
+			if `showid_perc' {
+				loc if error_rate >= `showid_val' / 100
 				loc message Displaying back checks with error rates of at least {res:`showid'}...
 			}
 			else {
-				loc if differences >= `showid'
-				loc message Displaying back checks with at least {res:`showid'} `=plural(`showid', "difference")'...
+				loc if differences >= `showid_val'
+				loc message Displaying back checks with at least {res:`showid_val'} `=plural(`showid_val', "difference")'...
 			}
 			errorrate if `if', type(`type') by1(`id') message("`message'") keep
 			qui count if `if' & type == `type'
@@ -856,6 +699,288 @@ program bcstats, rclass
 		}
 	}
 end
+
+
+/* -------------------------------------------------------------------------- */
+					/* parsing programs		*/
+
+pr parse_okrange, sclass
+	while `:length loc 0' {
+		gettoken varmin 0 : 0, parse(",")
+		gettoken comma1 0 : 0, parse(",")
+		gettoken max    0 : 0, parse(",")
+		gettoken comma2 0 : 0, parse(",")
+
+		if "`comma1'" != "," | !inlist("`comma2'", ",", "") {
+			di as err "option okrange() invalid"
+			ex 198
+		}
+
+		* Parse the varname.
+		gettoken var min : varmin
+		if `:list sizeof var' > 1 {
+			di as err "option okrange(): `var': too many variables specified"
+			ex 103
+		}
+		loc vars "`vars' `"`var'"'"
+
+		* Parse the min and the max.
+
+		if `:list sizeof min' > 1 | `:list sizeof max' > 1 {
+			di as err "option okrange() invalid"
+			ex 198
+		}
+
+		* Remove the brackets.
+		* Remove leading and trailing white space.
+		loc min : list retok min
+		loc max : list retok max
+		mata: st_local("maxlast", substr(st_local("max"), -1, 1))
+		if substr("`min'", 1, 1) != "[" | "`maxlast'" != "]" {
+			di as err "option okrange() invalid"
+			ex 198
+		}
+		loc min : subinstr loc min "[" ""
+		mata: st_local("max", ///
+			substr(st_local("max"), 1, strlen(st_local("max")) - 1))
+
+		* Parse percentages.
+		foreach local in min max {
+			mata: st_local("`local'perc", ///
+				strofreal(substr(st_local("`local'"), -1, 1) == "%"))
+			if ``local'perc' {
+				mata: st_local("`local'", substr(st_local("`local'"), 1, ///
+					strlen(st_local("`local'")) - 1))
+			}
+		}
+		if `minperc' + `maxperc' == 1 {
+			di as err "option okrange(): range endpoints must be " ///
+				"both absolute or both relative"
+			ex 198
+		}
+		loc allperc `allperc' `minperc'
+
+		cap conf n `min'
+		if _rc {
+			di as err "option okrange(): invalid minimum"
+			ex 198
+		}
+
+		cap conf n `max'
+		if _rc {
+			di as err "option okrange(): invalid maximum"
+			ex 198
+		}
+
+		if `min' > `max' {
+			di as err "option okrange(): range minimum greater than maximum"
+			ex 198
+		}
+
+		if `min' > 0 | `max' < 0 {
+			di as err "option okrange(): range does not include 0"
+			ex 198
+		}
+
+		loc allmin `allmin' `min'
+		loc allmax `allmax' `max'
+	}
+
+	sret loc varlist	"`vars'"
+	sret loc perc		`allperc'
+	sret loc min		`allmin'
+	sret loc max		`allmax'
+end
+
+pr parse_showid, sclass
+	if `:list sizeof 0' != 1 {
+		di as err "option showid() invalid"
+		ex 198
+	}
+
+	mata: st_local("perc", strofreal(substr(st_local("0"), -1, 1) == "%"))
+	if !`perc' ///
+		loc val : copy loc 0
+	else {
+		mata: st_local("val", ///
+			substr(st_local("0"), 1, strlen(st_local("0")) - 1))
+	}
+
+	cap confirm n `val'
+	if _rc {
+		di as err "option showid() invalid"
+		ex 198
+	}
+
+	if `perc' {
+		if !inrange(`val', 0, 100) {
+			di as err "showid rate must be between 0% and 100%"
+			ex 198
+		}
+	}
+	else if `val' < 0 {
+		di as err "showid value must be nonnegative"
+		ex 198
+	}
+
+	sret loc val  `val'
+	sret loc perc `perc'
+end
+
+pr error_unab_diff
+	syntax anything, opt(name)
+
+	gettoken anything rest : anything
+	if `:length loc rest' ///
+		err 198
+
+	di as err "option `opt'(): `anything' expands or unabbreviates to " ///
+		"different variable lists in survey and back check data"
+	ex 198
+end
+
+pr parse_opt_varlists
+	loc optsboth	id t1vars t2vars t3vars ttest signrank
+	loc optssurvey	enumerator enumteam keepsurvey
+	loc optsbc		backchecker bcteam keepbc
+	loc opts `optsboth' `optssurvey' `optsbc'
+
+	foreach opt of loc opts {
+		loc optssyntax `optssyntax' `opt'(str)
+	}
+	syntax, surveydata(str) bcdata(str) ///
+		[rangevars(str asis) `optssyntax'] ///
+		[varname(namelist) numeric(namelist)]
+
+	foreach data in survey bc {
+		loc dataname = cond("`data'" == "survey", "survey", "back check") + ///
+			" data"
+
+		loc fn : copy loc `data'data
+		qui d using `"`fn'"'
+		if r(N) ///
+			qui u in 1 using `"`fn'"', clear
+		else ///
+			qui u `"`fn'"', clear
+
+		foreach opt of loc optsboth {
+			loc max = cond(`:list opt in varname', "max(1)", "")
+			cap noi unab `opt'`data' : ``opt'', min(0) `max' name(`opt'())
+			if _rc {
+				di as err "in `dataname'"
+				ex `=_rc'
+			}
+
+			* Sorting because even if `opt'survey and `opt'bc contain the same
+			* variables, they may be in different orders.
+			foreach var in `:list sort `opt'`data'' {
+				cap conf numeric var `var'
+				loc `opt'`data'isnum ``opt'`data'isnum' `=!_rc'
+			}
+		}
+
+		foreach var of loc rangevars {
+			cap noi unab unab : `var', min(0) max(1)
+			if _rc {
+				di as err "in `dataname'"
+				di as err "option okrange() invalid"
+				ex `=_rc'
+			}
+			loc rangevars`data' `rangevars`data'' `unab'
+
+			cap conf numeric var `var'
+			if _rc {
+				di as err "option okrange():  `var':  " ///
+					"string variable not allowed"
+				ex 109
+			}
+		}
+
+		foreach opt of loc opts`data' {
+			loc max = cond(`:list opt in varname', "max(1)", "")
+			unab `opt' : ``opt'', min(0) `max' name(`opt'())
+
+			if `:list opt in numeric' {
+				loc 0 , `opt'(``opt'')
+				syntax, [`opt'(varlist num)]
+			}
+		}
+	}
+
+	* Check for differences across the datasets.
+
+	foreach opt of loc optsboth {
+		if !`:list `opt'survey === `opt'bc' {
+			error_unab_diff "``opt''", opt(`opt')
+			/*NOTREACHED*/
+		}
+		loc `opt' ``opt'survey'
+
+		loc sort : list sort `opt'
+		forv i = 1/`:list sizeof sort' {
+			loc var :			word `i' of `sort'
+			loc isnumsurvey :	word `i' of ``opt'surveyisnum'
+			loc isnumbc :		word `i' of ``opt'bcisnum'
+
+			if `isnumsurvey' != `isnumbc' {
+				di as err "option `opt'(): " ///
+					"`var' is numeric in one dataset and string in the other"
+				ex 106
+			}
+		}
+	}
+
+	forv i = 1/`:list sizeof rangevars' {
+		loc var	:			word `i' of `rangevars'
+		loc varsurvey :		word `i' of `rangevarssurvey'
+		loc varbc :			word `i' of `rangevarsbc'
+
+		if "`varsurvey'" != "`varbc'" {
+			error_unab_diff `var', opt(okrange)
+			/*NOTREACHED*/
+		}
+	}
+	loc rangevars `rangevarssurvey'
+
+	* Check numeric varlists.
+	foreach opt of loc optsboth {
+		if `:list opt in numeric' {
+			loc 0 , `opt'(``opt'')
+			syntax, [`opt'(varlist num)]
+		}
+	}
+
+	* Check for duplicates.
+
+	foreach opt of loc opts {
+		loc dups : list dups `opt'
+		gettoken first : dups
+		if "`first'" != "" {
+			di as err "option `opt'(): " ///
+				"variable `first' mentioned more than once"
+			ex 198
+		}
+	}
+
+	loc dups : list dups rangevars
+	gettoken first : dups
+	if "`first'" != "" {
+		di as err "option okrange(): multiple ranges specified for `first'"
+		ex 198
+	}
+
+	* Return parsed options.
+	foreach opt in `opts' rangevars {
+		c_local `opt' "``opt''"
+	}
+end
+
+					/* parsing programs		*/
+/* -------------------------------------------------------------------------- */
+
+
+/* -------------------------------------------------------------------------- */
+					/* -errorrate-			*/
 
 * show table of error rates and save error rates matrix in r(rates)
 pr errorrate, rclass
@@ -940,12 +1065,5 @@ pr errorrate, rclass
 	if "`keep'" == "" drop differences total error_rate
 end
 
-* Changes history
-* 1.0.0. Nov 3, 2011.
-* 1.1.0. Nov 18, 2011.
-*	Data set in memory does not need to be empty or saved.
-*	Fixed bug with options lower, upper, nosymbol, and trim.
-* 1.2.0. Dec 7, 2011.
-*	Errors if there are no observations.
-* 1.2.1. Dec 20, 2011.
-*	Help file modified.
+					/* -errorrate-			*/
+/* -------------------------------------------------------------------------- */
