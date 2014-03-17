@@ -354,6 +354,7 @@ program bcstats, rclass
 		tempfile `data'
 		qui save ``data''
 	}
+
 	***end***
 
 	***produce data set***
