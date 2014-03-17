@@ -66,7 +66,7 @@ program bcstats, rclass
 		loc var :			word `i' of `rangevars'
 		loc `var'perc :		word `i' of `okrange_perc'
 		loc `var'min :		word `i' of `okrange_min'
-		loc `var'max :		word `i' of `okrange_min'
+		loc `var'max :		word `i' of `okrange_max'
 	}
 
 	* enumerator checks
