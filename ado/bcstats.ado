@@ -706,10 +706,10 @@ end
 
 pr parse_okrange, sclass
 	while `:length loc 0' {
-		gettoken varmin 0 : 0, parse(",")
-		gettoken comma1 0 : 0, parse(",")
-		gettoken max    0 : 0, parse(",")
-		gettoken comma2 0 : 0, parse(",")
+		gettoken varmin 0 : 0, p(",")
+		gettoken comma1 0 : 0, p(",")
+		gettoken max    0 : 0, p(",")
+		gettoken comma2 0 : 0, p(",")
 
 		if "`comma1'" != "," | !inlist("`comma2'", ",", "") {
 			di as err "option okrange() invalid"
@@ -726,11 +726,6 @@ pr parse_okrange, sclass
 
 		* Parse the min and the max.
 
-		if `:list sizeof min' > 1 | `:list sizeof max' > 1 {
-			di as err "option okrange() invalid"
-			ex 198
-		}
-
 		* Remove the brackets.
 		* Remove leading and trailing white space.
 		loc min : list retok min
@@ -743,6 +738,15 @@ pr parse_okrange, sclass
 		loc min : subinstr loc min "[" ""
 		mata: st_local("max", ///
 			substr(st_local("max"), 1, strlen(st_local("max")) - 1))
+		loc min : list retok min
+		loc max : list retok max
+
+		* This check should come after the brackets are removed: "[ -x, y ]" is
+		* four tokens, but it is a permitted syntax.
+		if `:list sizeof min' > 1 | `:list sizeof max' > 1 {
+			di as err "option okrange() invalid"
+			ex 198
+		}
 
 		* Parse percentages.
 		foreach local in min max {
@@ -806,7 +810,7 @@ pr parse_showid, sclass
 			substr(st_local("0"), 1, strlen(st_local("0")) - 1))
 	}
 
-	cap confirm n `val'
+	cap conf n `val'
 	if _rc {
 		di as err "option showid() invalid"
 		ex 198
