@@ -801,7 +801,7 @@ pr parse_okrange, sclass
 end
 
 pr parse_showid, sclass
-	if `:list sizeof 0' > 1 {
+	if `:list sizeof 0' != 1 {
 		di as err "option showid() invalid"
 		ex 198
 	}
