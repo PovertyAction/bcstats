@@ -4,7 +4,7 @@ program bcstats, rclass
 
 	#d ;
 	syntax, Surveydata(str) Bcdata(str) id(passthru)
-		/* type variables */
+		/* comparison variables */
 		[t1vars(passthru) t2vars(passthru) t3vars(passthru)]
 		/* enumerator checks */
 		[ENUMerator(passthru) BACKchecker(passthru)
@@ -44,7 +44,7 @@ program bcstats, rclass
 	;
 	#d cr
 
-	* Check type variables.
+	* Check the comparison variables.
 	loc tvars `t1vars' `t2vars' `t3vars'
 	if !`:list sizeof tvars' {
 		* Using -icd9- as a template.
