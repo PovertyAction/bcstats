@@ -40,6 +40,7 @@ program bcstats, rclass
 		`enumerator' `enumteam' `keepsurvey'
 		`backchecker' `bcteam' `keepbc'
 		varname(enumerator enumteam backchecker bcteam)
+		numeric(enumerator enumteam backchecker bcteam ttest signrank)
 	;
 	#d cr
 
@@ -275,15 +276,6 @@ program bcstats, rclass
 		if !_N {
 			di as err "no observations in ``data'name' data"
 			ex 2000
-		}
-
-		* confirm numeric variables
-		foreach var in ``data'advars' `ttest' `signrank' `rangevars' {
-			cap confirm numeric v `var'
-			if _rc {
-				di as err "'`var'' found where numeric variable expected in ``data'name' data"
-				ex 198
-			}
 		}
 
 		* isid
@@ -847,14 +839,6 @@ pr error_unab_diff
 	ex 198
 end
 
-pr error_type_diff
-	syntax name, opt(name)
-
-	di as err "option `opt'(): " ///
-		"`namelist' is numeric in one dataset and string in the other"
-	ex 198
-end
-
 pr parse_opt_varlists
 	loc optsboth	id t1vars t2vars t3vars ttest signrank
 	loc optssurvey	enumerator enumteam keepsurvey
@@ -865,7 +849,8 @@ pr parse_opt_varlists
 		loc optssyntax `optssyntax' `opt'(str)
 	}
 	syntax, surveydata(str) bcdata(str) ///
-		[rangevars(str asis) varname(namelist) `optssyntax']
+		[rangevars(str asis) `optssyntax'] ///
+		[varname(namelist) numeric(namelist)]
 
 	foreach data in survey bc {
 		loc dataname = cond("`data'" == "survey", "survey", "back check") + ///
@@ -901,15 +886,24 @@ pr parse_opt_varlists
 				di as err "option okrange() invalid"
 				ex `=_rc'
 			}
-
 			loc rangevars`data' `rangevars`data'' `unab'
+
 			cap conf numeric var `var'
-			loc rangevars`data'isnum `rangevars`data'isnum' `=!_rc'
+			if _rc {
+				di as err "option okrange():  `var':  " ///
+					"string variable not allowed"
+				ex 109
+			}
 		}
 
 		foreach opt of loc opts`data' {
 			loc max = cond(`:list opt in varname', "max(1)", "")
 			unab `opt' : ``opt'', min(0) `max' name(`opt'())
+
+			if `:list opt in numeric' {
+				loc 0 , `opt'(``opt'')
+				syntax, [`opt'(varlist num)]
+			}
 		}
 	}
 
@@ -929,8 +923,9 @@ pr parse_opt_varlists
 			loc isnumbc :		word `i' of ``opt'bcisnum'
 
 			if `isnumsurvey' != `isnumbc' {
-				error_type_diff `var', opt(`opt')
-				/*NOTREACHED*/
+				di as err "option `opt'(): " ///
+					"`var' is numeric in one dataset and string in the other"
+				ex 106
 			}
 		}
 	}
@@ -939,20 +934,21 @@ pr parse_opt_varlists
 		loc var	:			word `i' of `rangevars'
 		loc varsurvey :		word `i' of `rangevarssurvey'
 		loc varbc :			word `i' of `rangevarsbc'
-		loc isnumsurvey :	word `i' of `rangevarssurveyisnum'
-		loc isnumbc :		word `i' of `rangevarsbcisnum'
 
 		if "`varsurvey'" != "`varbc'" {
 			error_unab_diff `var', opt(okrange)
 			/*NOTREACHED*/
 		}
-
-		if `isnumsurvey' != `isnumbc' {
-			error_type_diff `varsurvey', opt(okrange)
-			/*NOTREACHED*/
-		}
 	}
 	loc rangevars `rangevarssurvey'
+
+	* Check numeric varlists.
+	foreach opt of loc optsboth {
+		if `:list opt in numeric' {
+			loc 0 , `opt'(``opt'')
+			syntax, [`opt'(varlist num)]
+		}
+	}
 
 	* Check for duplicates.
 
