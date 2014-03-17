@@ -43,7 +43,7 @@ adopath ++ `"`c(pwd)'"'
 cd ../cscript
 adopath ++ `"`c(pwd)'/ado"'
 
-cscript_bcstats bcstats
+cscript_bcstats bcstats adofile bcstats
 
 
 /* -------------------------------------------------------------------------- */
