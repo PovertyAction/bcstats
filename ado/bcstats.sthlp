@@ -115,7 +115,7 @@ stability checks for type 2 and type 3 variables.
 
 {pstd}
 The GitHub repository for {cmd:bcstats} is
-{browse "https://github.com/PovertyAction/bcstats":here}.
+{browse "https://github.com/mwhite-IPA/bcstats":here}.
 Previous versions may be found there: see the tags.
 
 
