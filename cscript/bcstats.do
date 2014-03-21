@@ -43,6 +43,14 @@ adopath ++ `"`c(pwd)'"'
 cd ../cscript
 adopath ++ `"`c(pwd)'/ado"'
 
+* Determine the location of the "Project testing" Box subfolder.
+loc curdir "`c(pwd)'"
+c bcstatsbox
+cd "Project testing"
+conf f "Project testing.do"
+loc projtest "`c(pwd)'"
+cd `"`curdir'"'
+
 cscript_bcstats bcstats adofile bcstats
 
 
@@ -131,6 +139,15 @@ bcstats, surveydata(bcstats_survey) bcdata(bcstats_bc) id(id) ///
 	keepsurvey(date) keepbc(date) nolabel
 
 cd ..
+
+
+/* -------------------------------------------------------------------------- */
+					/* project testing		*/
+
+loc curdir "`c(pwd)'"
+cd `"`projtest'"'
+include "Project testing"
+cd `"`curdir'"'
 
 
 /* -------------------------------------------------------------------------- */

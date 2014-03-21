@@ -1,5 +1,5 @@
 {smcl}
-{* *! version 1.3.0 Matthew White 17mar2014}{...}
+{* *! version 1.3.1 Matthew White 21mar2014}{...}
 {title:Title}
 
 {phang}
@@ -115,7 +115,7 @@ stability checks for type 2 and type 3 variables.
 
 {pstd}
 The GitHub repository for {cmd:bcstats} is
-{browse "https://github.com/PovertyAction/bcstats":here}.
+{browse "https://github.com/matthew-white/bcstats":here}.
 Previous versions may be found there: see the tags.
 
 
