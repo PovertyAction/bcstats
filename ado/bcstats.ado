@@ -1,4 +1,4 @@
-*! version 1.3.0 Matthew White 17mar2014
+*! version 1.3.1 Matthew White 21mar2014
 program bcstats, rclass
 	vers 9
 
