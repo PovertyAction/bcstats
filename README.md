@@ -1,7 +1,9 @@
 bcstats
 =======
 
-`bcstats` is a Stata program for analyzing back check (field audit) data and comparing it to the original survey data.
+`bcstats` is a Stata program for analyzing back check (field audit) data and comparing it to the original survey data. From the Innovations for Poverty Action Back Check Manual:
+
+> A back check &mdash; or field audit as it is also known &mdash; is when a highly qualified surveyor visits a respondent a second time to administer a mini-survey composed of a selection of questions from the original questionnaire and then the team matches the back check with the respondent’s original response. They hold surveyors directly accountable by comparing how they ask questions with that of a team expert, while revealing the robustness of the survey instrument. This critical step in data quality enables us to monitor both the performance of the survey team and the questionnaire in the field.
 
 This repository follows the [git-flow](http://nvie.com/posts/a-successful-git-branching-model/) model. Submit pull requests to the `develop` branch.
 
