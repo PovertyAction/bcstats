@@ -5,9 +5,7 @@ bcstats
 
 > A back check &mdash; or field audit as it is also known &mdash; is when a highly qualified surveyor visits a respondent a second time to administer a mini-survey composed of a selection of questions from the original questionnaire and then the team matches the back check with the respondent’s original response. They hold surveyors directly accountable by comparing how they ask questions with that of a team expert, while revealing the robustness of the survey instrument. This critical step in data quality enables us to monitor both the performance of the survey team and the questionnaire in the field.
 
-This repository follows the [git-flow](http://nvie.com/posts/a-successful-git-branching-model/) model. Submit pull requests to the `develop` branch.
-
-Other `bcstats` development documents are stored on Box [here](https://ipastorage.box.com/bcstats-develop). This includes all live-project testing that involves sensitive information that does not belong on GitHub.
+Some `bcstats` development documents are stored on Box [here](https://ipastorage.box.com/bcstats-develop). This includes all live-project testing that involves sensitive information that does not belong on GitHub.
 
 Where a GitHub issue refers to an e-mail chain or requires an attachment, the e-mail or attachment is stored in a subfolder of the `bcstats` Box, and the issue includes a link to the Box subfolder.
 
