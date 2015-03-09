@@ -290,8 +290,11 @@ collaborated on the structure of the program.
 {marker author}{...}
 {title:Author}
 
-{pstd}Matthew White, Innovations for Poverty Action{p_end}
-{pstd}mwhite@poverty-action.org{p_end}
+{pstd}Matthew White{p_end}
+
+{pstd}For questions or suggestions, submit a
+{browse "https://github.com/PovertyAction/bcstats/issues":GitHub issue}
+or e-mail researchsupport@poverty-action.org.{p_end}
 
 
 {title:Also see}
