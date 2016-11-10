@@ -67,10 +67,10 @@ the comparisons data set{p_end}
 {synopt:{opt full}}include all comparisons, not just differences{p_end}
 {synopt:{opt nol:abel}}do not use value labels{p_end}
 {synopt:{opth file:name(filename)}}save as {it:filename};
-default is {cmd:filename(bc_diffs.csv)} or
+default is {cmd:filename(bc_diffs.xlsx)} or
 {cmd:filename(bc_diffs.dta)} if {opt dta} is specified {p_end}
 {synopt:{opt replace}}overwrite existing file{p_end}
-{synopt:{opt dta}}save data set as .dta file; default is .csv{p_end}
+{synopt:{opt dta}}save data set as .dta file; default is .xlsx{p_end}
 
 {syntab:Options}
 {synopt:{opt okrate(#)}}the acceptable error rate;
