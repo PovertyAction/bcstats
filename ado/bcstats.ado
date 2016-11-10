@@ -1,9 +1,9 @@
-*! version 1.3.1 Matthew White 21mar2014
+*! version 2.0 Christopher Boyer 10nov2016
 program bcstats, rclass
-	vers 9
+    vers 13.0
 
-	#d ;
-	syntax, Surveydata(str) Bcdata(str) id(passthru)
+    #d ;
+    syntax, Surveydata(str) Bcdata(str) id(passthru)
 		/* comparison variables */
 		[t1vars(passthru) t2vars(passthru) t3vars(passthru)]
 		/* enumerator checks */
@@ -21,9 +21,9 @@ program bcstats, rclass
 	;
 	#d cr
 
-	***check syntax***
+    ***check syntax***
 
-	* Parse -okrange()-.
+	* parse -okrange()-.
 	parse_okrange `okrange'
 	loc rangevars		"`s(varlist)'"
 	loc okrange_perc	`s(perc)'
@@ -32,7 +32,7 @@ program bcstats, rclass
 
 	preserve
 
-	* Unabbreviate and expand varlists.
+	* unabbreviate and expand varlists.
 	#d ;
 	parse_opt_varlists,
 		surveydata(`"`surveydata'"') bcdata(`"`bcdata'"') rangevars(`rangevars')
@@ -44,7 +44,7 @@ program bcstats, rclass
 	;
 	#d cr
 
-	* Check the comparison variables.
+	* check the comparison variables
 	loc tvars `t1vars' `t2vars' `t3vars'
 	if !`:list sizeof tvars' {
 		* Using -icd9- as a template.
@@ -52,7 +52,7 @@ program bcstats, rclass
 		ex 198
 	}
 
-	* Finish processing -okrange()-.
+	* finish processing -okrange()-
 
 	foreach var of loc rangevars {
 		if !`:list var in tvars' {
@@ -93,7 +93,7 @@ program bcstats, rclass
 	}
 
 	* Parse -filename()-.
-	loc ext = cond("`dta'" == "", ".csv", ".dta")
+	loc ext = cond("`dta'" == "", ".xlsx", ".dta")
 	if !`:length loc filename' ///
 		loc filename bc_diffs`ext'
 	else {
@@ -264,6 +264,10 @@ program bcstats, rclass
 		}
 	}
 
+    ***end check syntax***
+
+	***check data***
+
 	loc surveyname survey
 	loc bcname back check
 	* "advars" suffix for "administrator variables"
@@ -355,9 +359,9 @@ program bcstats, rclass
 		qui save ``data''
 	}
 
-	***end***
+	***end check data***
 
-	***produce data set***
+    ***produce data set***
 	* merge
 	qui merge `id' using `survey'
 
@@ -533,15 +537,7 @@ program bcstats, rclass
 	* save as .csv/.dta
 	loc csvwarn 0
 	if "`dta'" == "" {
-		qui outsheet using `"`filename'"', c `replace'
-		qui insheet  using `"`filename'"', c non clear
-		qui ds
-		foreach var in `r(varlist)' {
-			if mi(`var'[1]) {
-				loc csvwarn 1
-				continue, break
-			}
-		}
+		qui export excel using `"`filename'"', firstrow(var) sheet("diffs") `replace'
 	}
 	else {
 		qui compress
@@ -700,10 +696,6 @@ program bcstats, rclass
 		}
 	}
 end
-
-
-/* -------------------------------------------------------------------------- */
-					/* parsing programs		*/
 
 pr parse_okrange, sclass
 	while `:length loc 0' {
