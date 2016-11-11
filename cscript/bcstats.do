@@ -5,7 +5,7 @@
 
 * 1 to execute profile.do after completion; 0 not to.
 * (Matt's computer only.)
-local profile 1
+local profile 0
 
 
 /* -------------------------------------------------------------------------- */
@@ -159,9 +159,9 @@ bcstats, surveydata(bcstats_survey) bcdata(bcstats_bc) id(id) ///
 	okrate(0.09) okrange(gameresult [-1, 1], itemssold [-5%, 5%]) exclude(. "") ///
 	t1vars(gender) enumerator(enum) enumteam(enumteam) backchecker(bcer) ///
 	t2vars(gameresult) signrank(gameresult) ///
-	t3vars(itemssold) ttest(itemssold) ///
+	t3vars(itemssold) ttest(itemssold gameresult) ///
 	keepbc(date) keepsurvey(date) full replace
-
+	
 cd ..
 
 

@@ -30,8 +30,6 @@ program bcstats, rclass
 	loc okrange_min		`s(min)'
 	loc okrange_max		`s(max)'
 
-	preserve
-
 	* unabbreviate and expand varlists.
 	#d ;
 	parse_opt_varlists,
@@ -393,7 +391,7 @@ program bcstats, rclass
 	}
 	tempname pf
 	tempfile byobs
-	postfile `pf' `idpost' type str32 variable str244 survey str244 back_check diff using `byobs'
+	postfile `pf' `idpost' type str32 variable str244 label str244 survey str244 back_check diff using `byobs'
 
 	* post
 	sort `enumerator' `id'
@@ -434,6 +432,9 @@ program bcstats, rclass
 					loc idpost `idpost' (`idval')
 				}
 
+				* prepare variable label for post
+				local varl : variable label `var'
+
 				* prepare survey and back check values for post
 				if `uselab' {
 					if mi(`decvar'[`i']) loc val = string(`var'[`i'], "`format'")
@@ -469,7 +470,7 @@ program bcstats, rclass
 				}
 
 				* post
-				post `pf' `idpost' (`ttype') ("`var'") (`"`val'"') (`"`bcval'"') (`diff')
+				post `pf' `idpost' (`ttype') ("`var'") ("`varl'") (`"`val'"') (`"`bcval'"') (`diff')
 			}
 		}
 		if `uselab' drop `decvar' `bcdecvar'
@@ -495,7 +496,7 @@ program bcstats, rclass
 	drop _merge
 	sort `n'
 	drop `n'
-	order `id' `enumerator' `enumteam' `backchecker' `bcteam' type variable survey back_check diff `keepsurvey' `bckeepbc'
+	order `id' `enumerator' `enumteam' `backchecker' `bcteam' type variable label survey back_check diff `keepsurvey' `bckeepbc'
 	if "`nolabel'" != "" {
 		if `:list sizeof keepsurvey' | `:list sizeof bckeepbc' {
 			qui ds `keepsurvey' `bckeepbc', has(t numeric)
@@ -517,6 +518,7 @@ program bcstats, rclass
 	la def `label' 1 "type 1" 2 "type 2" 3 "type 3"
 	la val type `label'
 	la var variable "Variable"
+	la var label "Variable label (if available)"
 	la var survey "Value in survey data"
 	la var back_check "Value in back check data"
 	la var diff "Difference between survey and back check"
@@ -534,8 +536,7 @@ program bcstats, rclass
 		drop diff
 	}
 
-	* save as .csv/.dta
-	loc csvwarn 0
+	* save as .xlsx/.dta
 	if "`dta'" == "" {
 		qui export excel using `"`filename'"', firstrow(var) sheet("diffs") `replace'
 	}
@@ -548,6 +549,12 @@ program bcstats, rclass
 	***display stats***
 	use `byobs', clear
 
+	* initialize temp files
+	foreach name in errvars errenums errbcers errenumteam errbcteam reliability {
+		tempfile `name'
+		qui touch ``name''
+	}
+
 	* enumerator checks
 	forv type = 1/2 {
 		if "`t`type'vars'" != "" {
@@ -557,7 +564,7 @@ program bcstats, rclass
 			if "`enumerator'" != "" {
 				if !`showall' loc message Displaying enumerators with error rates above {res:`=100 * `okrate''%}...
 				else loc message Displaying enumerator error rates...
-				errorrate, type(`type') by1(`enumerator') by1name(enumerator) message("`message'") okrate(`okrate') keep
+				errorrate, type(`type') by1(`enumerator') append(`errenums') by1name(enumerator) message("`message'") okrate(`okrate') keep
 				loc varbyenum = r(high)
 				tempname enum`type'
 				mat `enum`type'' = r(rates)
@@ -571,7 +578,7 @@ program bcstats, rclass
 
 			* enumerator team error rates
 			if "`enumteam'" != "" {
-				errorrate, type(`type') by1(`enumteam') by1name(enum team) message("Displaying enumerator team error rates...")
+				errorrate, type(`type') by1(`enumteam') append(`errenumteam') by1name(enum team) message("Displaying enumerator team error rates...")
 				tempname enumteam`type'
 				mat `enumteam`type'' = r(rates)
 				loc retenumteam `"`retenumteam' "ret mat enumteam`type' = `enumteam`type''""'
@@ -580,7 +587,7 @@ program bcstats, rclass
 			* variable error rates
 			if `type' == 1 & !`showall' loc message Displaying variables with error rates above {res:`=100 * `okrate''%}...
 			else loc message Displaying variable error rates...
-			errorrate, type(`type') by1(variable) message("`message'") okrate(`=cond(`type' == 1, `okrate', -1)') strictreturn
+			errorrate, type(`type') by1(variable) append(`errvars') message("`message'") okrate(`=cond(`type' == 1, `okrate', -1)') strictreturn
 			if `type' == 1 {
 				qui errorrate, type(1) by1(variable) strictreturn
 				tempname var1
@@ -602,7 +609,7 @@ program bcstats, rclass
 
 			* back checker error rates
 			if "`backchecker'" != "" {
-				errorrate, type(`type') by1(`backchecker') by1name("back checker") message("Displaying back checker error rates...")
+				errorrate, type(`type') by1(`backchecker') append(`errbcers') by1name("back checker") message("Displaying back checker error rates...")
 				tempname backchecker`type'
 				mat `backchecker`type'' = r(rates)
 				loc retbackchecker `"`retbackchecker' "ret mat backchecker`type' = `backchecker`type''""'
@@ -610,7 +617,7 @@ program bcstats, rclass
 
 			* back checker team error rates
 			if "`bcteam'" != "" {
-				errorrate, type(`type') by1(`bcteam') by1name("bc team") message("Displaying back checker team error rates...")
+				errorrate, type(`type') by1(`bcteam') append(`errbcteam') by1name("bc team") message("Displaying back checker team error rates...")
 				tempname bcteam`type'
 				mat `bcteam`type'' = r(rates)
 				loc retbcteam `"`retbcteam' "ret mat bcteam`type' = `bcteam`type''""'
@@ -632,6 +639,11 @@ program bcstats, rclass
 		}
 	}
 
+	tempname pfttest pfsignrank
+	tempfile tmpttest tmpsignrank
+	postfile `pfttest' str32 variable str6 type mean_survey mean_bc str244 diff str244 pvalue using `tmpttest'
+	postfile `pfsignrank' str32 variable str6 type str30 rank_type str244 rank str244 sum_rank str244 Z str244 pvalue using `tmpsignrank'
+
 	* stability checks
 	foreach type in 2 3 {
 		loc ttestvars    : list t`type'vars & ttest
@@ -641,7 +653,7 @@ program bcstats, rclass
 
 			* type 3 variables: variable error rates
 			if `type' == 3 {
-				errorrate, type(`type') by1(variable) message("Displaying variable error rates...") strictreturn
+				errorrate, type(`type') by1(variable) append(`errvars') message("Displaying variable error rates...") strictreturn
 				tempname var3
 				mat `var3' = r(rates)
 				loc retvar `"`retvar' "ret mat var3 = `var3'""'
@@ -661,9 +673,29 @@ program bcstats, rclass
 					qui count if variable == "`var'" & !mi(`var', bc_`var')
 					if r(N) {
 						di _n "{txt}{cmd:`test'} for {res:`var'}:"
-						if "`test'" == "ttest" ttest `var' == bc_`var' if variable == "`var'", level(`level')
-						else signrank `var' = bc_`var' if variable == "`var'"
-						loc row `statsrow'
+						if "`test'" == "ttest" {
+							ttest `var' == bc_`var' if variable == "`var'", level(`level')
+							loc row `statsrow'
+							loc mu1 = r(mu_1)
+							loc mu2 = r(mu_2)
+							loc delta = r(mu_1) - r(mu_2)
+							loc d : di %4.3f `delta'
+							loc p : di %4.3f `r(p)'
+							loc p = cond(r(p) < 0.001, "< 0.001", "`p'")
+							loc d = cond(r(p) < 0.05, cond(r(p) < 0.01, cond(r(p) < 0.001, "`d'***", "`d'**"), "`d'*"), "`d'")
+							post `pfttest' ("`var'") ("type `type'") (`mu1') (`mu2') ("`d'") ("`p'")
+						}
+						else {
+							signrank `var' = bc_`var' if variable == "`var'"
+							loc row `statsrow'
+							loc p = 2*(1-normal(abs(r(z)))) 
+							loc p : di %4.3f `p'
+							loc p = cond(r(p) < 0.001, "< 0.001", "`p'")
+							post `pfsignrank' ("`var'") ("type `type'") ("positive") ("`r(N_pos)'") ("`r(sum_pos)'") ("`r(z)'") ("`p'")
+							post `pfsignrank' ("") ("") ("negative") ("`r(N_neg)'") ("`r(sum_neg)'") ("") ("")
+							post `pfsignrank' ("") ("") ("tie") ("`r(N_tie)'") ("") ("") ("")
+						}
+						
 					}
 					else {
 						di _n "{txt}no observations for {res:`var'}; skipping {cmd:`test'}"
@@ -684,9 +716,26 @@ program bcstats, rclass
 			}
 		}
 	}
+
+	postclose `pfttest'
+	postclose `pfsignrank'
 	***end***
 
-	if `csvwarn' di _n "{txt}note: the comparisons .csv contains commas and is misaligned."
+	preserve 
+
+	* export error rates to excel 
+	foreach name in errvars errenums errbcers errenumteam errbcteam tmpttest tmpsignrank {
+		use ``name'', clear
+
+		loc sheetname = subinstr("`name'", "err", "err_", .)
+		loc sheetname = subinstr("`sheetname'", "tmp", "", .)
+
+		if `=_N' != 0 {
+			qui export excel using `"`filename'"', firstrow(var) sheet("`sheetname'") sheetreplace
+		}
+	}
+
+	restore 
 
 	`:word 2 of `retshowid''
 	`:word 1 of `retshowid''
@@ -980,6 +1029,35 @@ end
 					/* parsing programs		*/
 /* -------------------------------------------------------------------------- */
 
+program saveappend
+	/* this program appends the data in memory, or a subset 
+	   of that data, to a stata file on disk. */
+	syntax using/ [if] [in] [, keep(varlist) sort(varlist)]
+
+	marksample touse 
+	tempfile tmp
+	preserve
+
+	keep if `touse'
+
+	if "`keep'" != "" {
+		keep `keep' `touse'
+	}
+
+	save `tmp'
+	use `using', clear
+
+	append using `tmp'
+
+	if "`sort'" != "" {
+		sort `sort'
+	}
+
+	drop `touse'
+	save `using', replace
+
+	restore
+end
 
 /* -------------------------------------------------------------------------- */
 					/* -errorrate-			*/
@@ -989,7 +1067,7 @@ pr errorrate, rclass
 	qui gen differences = .
 	qui gen total = .
 	qui gen error_rate = .
-	syntax [if/], type(integer) by1(varname) [by1name(str) by2(varname) message(str) okrate(real -1) keep strictreturn]
+	syntax [if/], type(integer) by1(varname) [append(string) by1name(str) by2(varname) message(str) okrate(real -1) keep strictreturn]
 	drop differences total error_rate
 
 	qui bys `by1' `by2': egen differences = total(diff & type == `type')
@@ -1023,6 +1101,17 @@ pr errorrate, rclass
 			if `:length loc if' qui replace `display' = `display' & `if'
 			egen `tag' = tag(`by1') if `display'
 			l `by1' error_rate differences total if `display' & `tag', ab(32) noo
+			if "`append'" != "" {
+				if "`by1'" == "variable" {
+					preserve
+					order variable
+				    qui saveappend using `"`append'"' if `display' & `tag', keep(`by1' type error_rate differences total)
+				    restore
+				}
+				else {
+					qui saveappend using `"`append'"' if `display' & `tag', keep(`by1' error_rate differences total)
+				}
+			}
 		}
 		else {
 			cap confirm str v `by1'
