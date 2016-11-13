@@ -11,6 +11,8 @@ program bcstats, rclass
 		ENUMTeam(passthru) BCTeam(passthru) SHowid(str) showall]
 		/* stability checks */
 		[ttest(passthru) Level(real -1) signrank(passthru)]
+		/* reliability checks */
+		[RELiability(passthru)]
 		/* comparisons dataset */
 		[KEEPSUrvey(passthru) keepbc(passthru) full NOLabel
 		FILEname(str) replace dta]
@@ -34,7 +36,7 @@ program bcstats, rclass
 	#d ;
 	parse_opt_varlists,
 		surveydata(`"`surveydata'"') bcdata(`"`bcdata'"') rangevars(`rangevars')
-		`id' `t1vars' `t2vars' `t3vars' `ttest' `signrank'
+		`id' `t1vars' `t2vars' `t3vars' `ttest' `signrank' `reliability'
 		`enumerator' `enumteam' `keepsurvey'
 		`backchecker' `bcteam' `keepbc'
 		varname(enumerator enumteam backchecker bcteam)
@@ -46,7 +48,7 @@ program bcstats, rclass
 	loc tvars `t1vars' `t2vars' `t3vars'
 	if !`:list sizeof tvars' {
 		* Using -icd9- as a template.
-		di as err "must specify one of options t1vars(), t2vars(), or t3vars()"
+		di as err "must specify, at minimum, one of options t1vars(), t2vars(), or t3vars()"
 		ex 198
 	}
 
@@ -83,7 +85,7 @@ program bcstats, rclass
 	loc showid_perc `s(perc)'
 
 	* stability checks
-	foreach option in ttest signrank {
+	foreach option in ttest signrank reliability {
 		if "``option''" != "" & "`t2vars'`t3vars'" == "" {
 			di as err "option `option' must be specified with option t2vars or t3vars"
 			ex 198
@@ -253,7 +255,7 @@ program bcstats, rclass
 	}
 
 	* ttest, signrank
-	foreach option in ttest signrank {
+	foreach option in ttest signrank reliability {
 		loc not23 : list `option' - t2vars
 		loc not23 : list not23 - t3vars
 		if "`not23'" != "" {
@@ -550,12 +552,13 @@ program bcstats, rclass
 	use `byobs', clear
 
 	* initialize temp files
-	foreach name in errvars errenums errbcers errenumteam errbcteam reliability {
+	foreach name in errvars errenums errbcers errenumteam errbcteam {
 		tempfile `name'
 		qui touch ``name''
 	}
 
-	* enumerator checks
+	***enumerator checks***
+
 	forv type = 1/2 {
 		if "`t`type'vars'" != "" {
 			di _n "{txt}Completing {res:enumerator} checks for type {res:`type'} variables..."
@@ -644,7 +647,8 @@ program bcstats, rclass
 	postfile `pfttest' str32 variable str6 type mean_survey mean_bc str244 diff str244 pvalue using `tmpttest'
 	postfile `pfsignrank' str32 variable str6 type str30 rank_type str244 rank str244 sum_rank str244 Z str244 pvalue using `tmpsignrank'
 
-	* stability checks
+	***stability checks***
+
 	foreach type in 2 3 {
 		loc ttestvars    : list t`type'vars & ttest
 		loc signrankvars : list t`type'vars & signrank
@@ -719,12 +723,65 @@ program bcstats, rclass
 
 	postclose `pfttest'
 	postclose `pfsignrank'
+
+	***reliability checks***
+	tempname pfrr
+	tempfile tmpreliability
+	postfile `pfrr' str32 variable str6 type SRV variance reliability_ratio ci_low ci_high using `tmpreliability'
+
+
+	foreach type in 2 3 {
+		di _n "{txt}Completing {res:reliability} checks for type {res:`type'} variables..."
+
+		loc reliabilityvars    : list t`type'vars & reliability
+		foreach var of loc reliabilityvars {
+			* calculate the SRV and the reliability ratio
+			reliabilityratio, survey(`var') backcheck(bc_`var')
+
+			local srv = r(srv)
+			local rr = r(rr)
+			local variance = r(variance)
+
+			/* If the reliability ratio is negative, it means that either the variable
+			has very low reliability or your back check sample size isn't large enough
+			yet. Look at the upper endpoint of the confidence interval of the
+			reliability ratio to determine which it is. If the upper endpoint is also
+			low, the variable may indeed have reliability issues. If it's high, the
+			jury's out until you get more back check data. */
+
+			* This information is useful whether or not the reliability ratio is
+			* negative.
+			quietly bootstrap reliabilityratio=r(rr), reps(5000) saving(reliability_ratio, replace): ///
+				reliabilityratio, survey(`var') backcheck(bc_`var')
+
+			preserve
+
+			quietly use reliability_ratio, clear
+
+			_pctile reliabilityratio, percentiles(2.5 97.5)
+
+			local low = r(r1)
+			local high = r(r2)
+			restore
+
+
+			post `pfrr' ("`var'") ("type `type'") (`srv') (`variance') (`rr') (`low') (`high')
+		}
+	}
+	postclose `pfrr'
+
 	***end***
 
+	preserve
+	use `tmpreliability', clear
+	format SRV variance reliability_ratio ci_low ci_high %9.4f
+	di _n "{txt}Displaying reliability of type 2 and 3 variables..."
+	l variable SRV variance reliability_ratio ci_low ci_high, ab(32) noo c table
+	restore	
 	preserve 
 
 	* export error rates to excel 
-	foreach name in errvars errenums errbcers errenumteam errbcteam tmpttest tmpsignrank {
+	foreach name in errvars errenums errbcers errenumteam errbcteam tmpttest tmpsignrank tmpreliability {
 		use ``name'', clear
 
 		loc sheetname = subinstr("`name'", "err", "err_", .)
@@ -886,7 +943,7 @@ pr error_unab_diff
 end
 
 pr parse_opt_varlists
-	loc optsboth	id t1vars t2vars t3vars ttest signrank
+	loc optsboth	id t1vars t2vars t3vars ttest signrank reliability
 	loc optssurvey	enumerator enumteam keepsurvey
 	loc optsbc		backchecker bcteam keepbc
 	loc opts `optsboth' `optssurvey' `optsbc'
@@ -1155,6 +1212,6 @@ pr errorrate, rclass
 
 	if "`keep'" == "" drop differences total error_rate
 end
-
 					/* -errorrate-			*/
 /* -------------------------------------------------------------------------- */
+

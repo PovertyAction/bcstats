@@ -59,6 +59,10 @@ default is {cmd:level(95)}{p_end}
 Wilcoxon matched-pairs signed-ranks tests for {varlist} in
 the back check and survey data using {helpb signrank}{p_end}
 
+{syntab:Reliability checks}
+{synopt:{opth rel:iability(varlist)}}calculate the simple response variance (SRV) 
+and reliability ratio for type 2 and 3 variables in {varlist}{p_end}
+
 {syntab:Comparisons data set}
 {synopt:{opth keepsu:rvey(varlist)}}include {varlist} in the survey data in
 the comparisons data set{p_end}
