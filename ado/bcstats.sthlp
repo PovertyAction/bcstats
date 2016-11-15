@@ -53,7 +53,9 @@ and all variables for all enumerators{p_end}
 {syntab:Stability checks}
 {synopt:{opth ttest(varlist)}}run paired two-sample mean-comparison tests for
 {varlist} in the back check and survey data using {helpb ttest}{p_end}
-{synopt:{opt l:evel(#)}}set confidence level for {helpb ttest};
+{synopt:{opth prtest(varlist)}}run two-sample test of equality of proportions in 
+the back check and survey data for dichotmous variables in {varlist} using {helpb prtest}{p_end}
+{synopt:{opt l:evel(#)}}set confidence level for {helpb ttest} and {helpb prtest};
 default is {cmd:level(95)}{p_end}
 {synopt:{opth signrank(varlist)}}run
 Wilcoxon matched-pairs signed-ranks tests for {varlist} in
@@ -167,7 +169,7 @@ more on the three types.
 
 {phang}
 {opt level(#)} specifies the confidence level, as a percentage, for
-confidence intervals calculated by {helpb ttest}.
+confidence intervals calculated by {helpb ttest} and {helpb prtest}.
 The default is {cmd:level(95)} or as set by {helpb set level}.
 
 {dlgtab:Comparisons data set}

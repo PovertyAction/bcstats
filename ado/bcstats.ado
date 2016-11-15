@@ -10,7 +10,7 @@ program bcstats, rclass
 		[ENUMerator(passthru) BACKchecker(passthru)
 		ENUMTeam(passthru) BCTeam(passthru) SHowid(str) showall]
 		/* stability checks */
-		[ttest(passthru) Level(real -1) signrank(passthru)]
+		[ttest(passthru) Level(real -1) signrank(passthru) prtest(passthru)]
 		/* reliability checks */
 		[RELiability(passthru)]
 		/* comparisons dataset */
@@ -36,11 +36,11 @@ program bcstats, rclass
 	#d ;
 	parse_opt_varlists,
 		surveydata(`"`surveydata'"') bcdata(`"`bcdata'"') rangevars(`rangevars')
-		`id' `t1vars' `t2vars' `t3vars' `ttest' `signrank' `reliability'
+		`id' `t1vars' `t2vars' `t3vars' `ttest' `signrank' `prtest' `reliability'
 		`enumerator' `enumteam' `keepsurvey'
 		`backchecker' `bcteam' `keepbc'
 		varname(enumerator enumteam backchecker bcteam)
-		numeric(enumerator enumteam backchecker bcteam ttest signrank)
+		numeric(enumerator enumteam backchecker bcteam ttest prtest signrank reliability)
 	;
 	#d cr
 
@@ -85,7 +85,7 @@ program bcstats, rclass
 	loc showid_perc `s(perc)'
 
 	* stability checks
-	foreach option in ttest signrank reliability {
+	foreach option in ttest prtest signrank reliability {
 		if "``option''" != "" & "`t2vars'`t3vars'" == "" {
 			di as err "option `option' must be specified with option t2vars or t3vars"
 			ex 198
@@ -204,8 +204,8 @@ program bcstats, rclass
 
 	* ttest, level
 	if `level' == -1 loc level = c(level)
-	else if "`ttest'" == "" {
-		di as err "option level must be specified with option ttest"
+	else if "`ttest'" == "" & "`prtest'" == "" {
+		di as err "option level must be specified with option ttest or option prtest"
 		ex 198
 	}
 	if !inrange(`level', 10, 99.99) {
@@ -642,17 +642,20 @@ program bcstats, rclass
 		}
 	}
 
-	tempname pfttest pfsignrank
-	tempfile tmpttest tmpsignrank
+	tempname pfttest pfsignrank pfprtest
+	tempfile tmpttest tmpsignrank tmpprtest
 	postfile `pfttest' str32 variable str6 type mean_survey mean_bc str244 diff str244 pvalue using `tmpttest'
+	postfile `pfprtest' str32 variable str6 type p_survey p_bc str244 diff str244 pvalue using `tmpprtest'
 	postfile `pfsignrank' str32 variable str6 type str30 rank_type str244 rank str244 sum_rank str244 Z str244 pvalue using `tmpsignrank'
 
 	***stability checks***
 
 	foreach type in 2 3 {
 		loc ttestvars    : list t`type'vars & ttest
+		loc prtestvars   : list t`type'vars & prtest
 		loc signrankvars : list t`type'vars & signrank
-		if (`type' == 2 & "`ttestvars'`signrankvars'" != "") | (`type' == 3 & "`t`type'vars'" != "") {
+
+		if (`type' == 2 & "`ttestvars'`signrankvars'`prtest'" != "") | (`type' == 3 & "`t`type'vars'" != "") {
 			di _n "{txt}Completing {res:stability} checks for type {res:`type'} variables..."
 
 			* type 3 variables: variable error rates
@@ -666,7 +669,8 @@ program bcstats, rclass
 			* ttest and signrank
 			loc tteststats N_1 N_2 p_l p_u p se t sd_1 sd_2 mu_1 mu_2 df_t
 			loc signrankstats N_neg N_pos N_tie sum_pos sum_neg z Var_a
-			foreach test in ttest signrank {
+			loc prteststats N_1 N_2 P_1 P_2 z
+			foreach test in ttest prtest signrank {
 				loc statsrow
 				foreach stat of loc `test'stats {
 					loc statsrow `statsrow'`=cond("`statsrow'" == "", "", ", ")'r(`stat')
@@ -689,6 +693,19 @@ program bcstats, rclass
 							loc d = cond(r(p) < 0.05, cond(r(p) < 0.01, cond(r(p) < 0.001, "`d'***", "`d'**"), "`d'*"), "`d'")
 							post `pfttest' ("`var'") ("type `type'") (`mu1') (`mu2') ("`d'") ("`p'")
 						}
+						else if "`test'" == "prtest" {
+							prtest `var' == bc_`var' if variable == "`var'", level(`level')
+							loc row `statsrow'
+							loc P1 = r(P_1)
+							loc P2 = r(P_2)
+							loc delta = r(P_1) - r(P_2)
+							loc pv = 2*(1-normal(abs(r(z)))) 
+							loc d : di %4.3f `delta'
+							loc p : di %4.3f `pv'
+							loc p = cond(`pv' < 0.001, "< 0.001", "`p'")
+							loc d = cond(`pv' < 0.05, cond(`pv' < 0.01, cond(`pv' < 0.001, "`d'***", "`d'**"), "`d'*"), "`d'")
+							post `pfprtest' ("`var'") ("type `type'") (`P1') (`P2') ("`d'") ("`p'")
+						}	
 						else {
 							signrank `var' = bc_`var' if variable == "`var'"
 							loc row `statsrow'
@@ -723,65 +740,72 @@ program bcstats, rclass
 
 	postclose `pfttest'
 	postclose `pfsignrank'
+	postclose `pfprtest'
 
 	***reliability checks***
+
 	tempname pfrr
-	tempfile tmpreliability
+	tempfile tmpreliability tmpcalc
 	postfile `pfrr' str32 variable str6 type SRV variance reliability_ratio ci_low ci_high using `tmpreliability'
 
-
 	foreach type in 2 3 {
-		di _n "{txt}Completing {res:reliability} checks for type {res:`type'} variables..."
 
-		loc reliabilityvars    : list t`type'vars & reliability
-		foreach var of loc reliabilityvars {
-			* calculate the SRV and the reliability ratio
-			reliabilityratio, survey(`var') backcheck(bc_`var')
+		if ("`reliability'" != "") {
 
-			local srv = r(srv)
-			local rr = r(rr)
-			local variance = r(variance)
+			di _n "{txt}Completing {res:reliability} checks for type {res:`type'} variables..."
 
-			/* If the reliability ratio is negative, it means that either the variable
-			has very low reliability or your back check sample size isn't large enough
-			yet. Look at the upper endpoint of the confidence interval of the
-			reliability ratio to determine which it is. If the upper endpoint is also
-			low, the variable may indeed have reliability issues. If it's high, the
-			jury's out until you get more back check data. */
+			loc reliabilityvars    : list t`type'vars & reliability
+			foreach var of loc reliabilityvars {
 
-			* This information is useful whether or not the reliability ratio is
-			* negative.
-			quietly bootstrap reliabilityratio=r(rr), reps(5000) saving(reliability_ratio, replace): ///
+				di _n "{txt}Completing {res:reliability} checks for {res:`var'}..."
+
+				* calculate the SRV and the reliability ratio
 				reliabilityratio, survey(`var') backcheck(bc_`var')
 
-			preserve
+				local srv = r(srv)
+				local rr = r(rr)
+				local variance = r(variance)
 
-			quietly use reliability_ratio, clear
+				/* If the reliability ratio is negative, it means that either the variable
+				has very low reliability or your back check sample size isn't large enough
+				yet. Look at the upper endpoint of the confidence interval of the
+				reliability ratio to determine which it is. If the upper endpoint is also
+				low, the variable may indeed have reliability issues. If it's high, the
+				jury's out until you get more back check data. */
 
-			_pctile reliabilityratio, percentiles(2.5 97.5)
+				* This information is useful whether or not the reliability ratio is
+				* negative.
+				qui bootstrap reliabilityratio=r(rr), reps(1500) saving(`tmpcalc', replace) nowarn noheader: ///
+					reliabilityratio, survey(`var') backcheck(bc_`var')
 
-			local low = r(r1)
-			local high = r(r2)
-			restore
+				preserve
+
+				quietly use `tmpcalc', clear
+
+				_pctile reliabilityratio, percentiles(2.5 97.5)
+
+				local low = r(r1)
+				local high = r(r2)
+				restore
 
 
-			post `pfrr' ("`var'") ("type `type'") (`srv') (`variance') (`rr') (`low') (`high')
+				post `pfrr' ("`var'") ("type `type'") (`srv') (`variance') (`rr') (`low') (`high')
+			}
 		}
 	}
 	postclose `pfrr'
 
 	***end***
 
-	preserve
-	use `tmpreliability', clear
-	format SRV variance reliability_ratio ci_low ci_high %9.4f
-	di _n "{txt}Displaying reliability of type 2 and 3 variables..."
-	l variable SRV variance reliability_ratio ci_low ci_high, ab(32) noo c table
-	restore	
-	preserve 
+	if "`reliability'" != "" {
+		use `tmpreliability', clear
+		format SRV variance reliability_ratio ci_low ci_high %9.4f
+		di _n "{txt}Displaying reliability of type 2 and 3 variables..."
+		l variable SRV variance reliability_ratio ci_low ci_high, ab(32) noo c table
+	}
 
 	* export error rates to excel 
-	foreach name in errvars errenums errbcers errenumteam errbcteam tmpttest tmpsignrank tmpreliability {
+	foreach name in errvars errenums errbcers errenumteam errbcteam tmpttest tmpprtest tmpsignrank tmpreliability {
 		use ``name'', clear
 
 		loc sheetname = subinstr("`name'", "err", "err_", .)
@@ -792,7 +816,8 @@ program bcstats, rclass
 		}
 	}
 
-	restore 
+	***display stats***
+	use `byobs', clear
 
 	`:word 2 of `retshowid''
 	`:word 1 of `retshowid''
@@ -943,7 +968,7 @@ pr error_unab_diff
 end
 
 pr parse_opt_varlists
-	loc optsboth	id t1vars t2vars t3vars ttest signrank reliability
+	loc optsboth	id t1vars t2vars t3vars ttest prtest signrank reliability
 	loc optssurvey	enumerator enumteam keepsurvey
 	loc optsbc		backchecker bcteam keepbc
 	loc opts `optsboth' `optssurvey' `optsbc'
