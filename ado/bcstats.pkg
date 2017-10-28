@@ -1,0 +1,24 @@
+v 3
+d 'BCSTATS': module to analyze back check (field audit) data and compare it to the original survey data
+d
+d bcstats compares back check (i.e., field audit, reinterview)
+d data and original survey data, producing a data set of
+d comparisons. It completes enumerator checks for type 1 and type
+d 2 variables and stability checks for type 2 and type 3 variables.
+d See the help file for definitions of the variable types.
+d 
+d KW: survey data
+d KW: data management
+d KW: back check
+d KW: field audit
+d 
+d Requires: Stata version 9
+d 
+d Distribution-Date: 20160419
+d 
+d Author: Matthew White and Christopher Boyer, Innovations for Poverty Action
+d Support: email researchsupport@poverty-action.org
+
+f bcstats.ado
+f reliabilityratio.ado
+f bcstats.sthlp
