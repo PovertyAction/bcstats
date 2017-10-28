@@ -554,7 +554,7 @@ program bcstats, rclass
 	* initialize temp files
 	foreach name in errvars errenums errbcers errenumteam errbcteam {
 		tempfile `name'
-		qui touch ``name''
+		qui poke ``name''
 	}
 
 	***enumerator checks***
@@ -1139,6 +1139,39 @@ program saveappend
 	save `using', replace
 
 	restore
+end
+
+/* -------------------------------------------------------------------------- */
+
+program poke
+	syntax [anything], [var(varlist)] [replace] 
+
+	* remove quotes from filename, if present
+	local file = `"`=subinstr(`"`anything'"', `"""', "", .)'"'
+
+	* test fatal conditions
+	cap assert "`file'" != "" 
+	if _rc {
+		di as err "must specify valid filename."
+		error 100
+	}
+
+	preserve 
+
+	if "`var'" != "" {
+		keep `var'
+		drop if _n > 0
+	}
+	else {
+		drop _all
+		g var = 1
+		drop var
+	}
+	* save 
+	save "`file'", emptyok `replace'
+
+	restore
+
 end
 
 /* -------------------------------------------------------------------------- */
