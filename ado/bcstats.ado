@@ -1,4 +1,4 @@
-*! version 2.0 Christopher Boyer 10nov2016
+*! version 2.1 Christopher Boyer 28oct2017
 program bcstats, rclass
     vers 13.0
 
