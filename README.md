@@ -15,13 +15,13 @@ Certification script
 The [certification script](http://www.stata.com/help.cgi?cscript) of `bcstats` is stored in the `cscript` directory. If you are new to certification scripts, you may find [this](http://www.stata-journal.com/sjpdf.html?articlenum=pr0001) Stata journal article helpful.
 
 
-Development Checklist
----------------------
+## Installation
 
-- [ ] add ability to export results and discrepancies list to Excel
-- [ ] integrate with `cfout`
-- [ ] calculate SRV and Reliability Ratio
-- [ ] fix issue #10
-- [ ] update example do-file to use `ipacheckimport` and excel inputs?
-- [ ] update cscript
-- [ ] streamline and use smart default settings
+```Stata
+* bcstats may be installed directly from GitHub
+net install bcstats, ///
+    from("https://raw.githubusercontent.com/PovertyAction/bcstats/master/ado") ///
+    replace 
+```
+
+If you encounter a clear bug, please file a minimal reproducible example on [github](https://github.com/PovertyAction/high-frequency-checks/issues). For questions and other discussion, please email us at [researchsupport@poverty-action.org](mailto:researchsupport@poverty-action.org).
